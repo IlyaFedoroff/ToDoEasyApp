@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ToDoEasyApp.Models.Validations;
 
 namespace ToDoEasyApp.Models
@@ -8,9 +9,10 @@ namespace ToDoEasyApp.Models
         public TodoItem()
         {
             IsCompleted = false;    //   значение по умолчанию
+            CreatedAt = DateTime.Now;
         }
-
-        [Required]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Автоинкремент для Id
         public int Id { get; set; }
 
         [Required]
@@ -19,6 +21,9 @@ namespace ToDoEasyApp.Models
 
         [Required]
         public bool? IsCompleted { get; set; }
+
+        
+        public DateTime CreatedAt { get; set; }
 
     }
 }

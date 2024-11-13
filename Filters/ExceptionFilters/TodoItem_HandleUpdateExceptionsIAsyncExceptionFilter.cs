@@ -16,11 +16,11 @@ namespace ToDoEasyApp.Filters.ExceptionFilters
 
         public async Task OnExceptionAsync(ExceptionContext context)
         {
-            var strTodoItemId = context.RouteData.Values["id"] as string;
+            var strTodoItemDtoId = context.RouteData.Values["id"] as string;
             
-            if (int.TryParse(strTodoItemId, out int todoItemid)) 
+            if (int.TryParse(strTodoItemDtoId, out int todoItemDtoId)) 
             {
-                if (!await _todoItemService.TodoItemExists(todoItemid))
+                if (!await _todoItemService.TodoItemExists(todoItemDtoId))
                 {
                     context.ModelState.AddModelError("TodoItemId", "TodoItemId does not exist anymore.");
                     var problemDetails = new ValidationProblemDetails(context.ModelState)

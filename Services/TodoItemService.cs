@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using ToDoEasyApp.Data;
 using ToDoEasyApp.Models;
 
@@ -18,27 +19,44 @@ namespace ToDoEasyApp.Services
             return await _context.TodoItems.AnyAsync(x => x.Id == id);
         }
 
-        public async Task<TodoItem?> GetTodoItem(int id)
+        public async Task<TodoItemDto?> GetTodoItem(int id)
         {
-            return await _context.TodoItems.FirstOrDefaultAsync(x => x.Id == id);
+            var todoItem = await _context.TodoItems.FirstOrDefaultAsync(x => x.Id == id);
+            return todoItem == null ? null : MapToDto(todoItem);
         }
 
-        public async Task<IEnumerable<TodoItem>> GetAllTodoItems()
+        public async Task<IEnumerable<TodoItemDto>> GetAllTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+            var todoItems =  await _context.TodoItems.ToListAsync();
+            return todoItems.Select(MapToDto);
         }
-
-        public async Task<TodoItem> AddTodoItem(TodoItem todoItem)
+        // how adding
+        public async Task<TodoItemDto> AddTodoItem(TodoItemDto todoItemDto)
         {
+            
+            
+            //TodoItem todoItem = new TodoItem();
+            //todoItem.Id = maxId + 1;
+            //todoItem.CreatedAt = DateTime.UtcNow;
+            //todoItem.Title = todoItemDto.Title;
+            //todoItem.IsCompleted = todoItemDto.IsCompleted;
+
             int maxId = _context.TodoItems.Max(x => x.Id);
-            todoItem.Id = maxId + 1;
+            Console.WriteLine($"maxId: {maxId}");
+            // Создаём новый объект TodoItem
+            TodoItem todoItem = new TodoItem
+            {
+                Title = todoItemDto.Title,
+                IsCompleted = todoItemDto.IsCompleted,
+                CreatedAt = DateTime.UtcNow // Дата создания, если она нужна
+            };
 
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
-            return todoItem;
+            return MapToDto(todoItem);
         }
 
-        public async Task<TodoItem?> UpdateTodoItem(TodoItem updatedTodoItem, int id)
+        public async Task<TodoItemDto?> UpdateTodoItem(TodoItemDto updatedTodoItemDto, int id)
         {
             
             var todoItem = await _context.TodoItems.FindAsync(id);
@@ -48,39 +66,54 @@ namespace ToDoEasyApp.Services
             }
 
             // updating 
-            todoItem.Title = updatedTodoItem.Title;
-            todoItem.IsCompleted = updatedTodoItem.IsCompleted;
+            todoItem.Title = updatedTodoItemDto.Title;
+            todoItem.IsCompleted = updatedTodoItemDto.IsCompleted;
 
             await _context.SaveChangesAsync();
 
-            return todoItem;
+            return MapToDto(todoItem);
         }
 
         public async Task<bool> DeleteTodoItem(int todoItemid)
         {
-            var todoItem = await GetTodoItem(todoItemid);
-
-            if (todoItem != null)
+            var todoItem = await _context.TodoItems.FindAsync(todoItemid);
+            if (todoItem == null)
             {
-                // hard DELETE
-                _context.TodoItems.Remove(todoItem);
-                await _context.SaveChangesAsync();
-                return true;
+                return false;
             }
-            return false;
+
+            // hard DELETE
+            _context.TodoItems.Remove(todoItem);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<TodoItem?> GetTodoItemByProperties(string? title, bool? isCompleted)
+        public async Task<TodoItemDto?> GetTodoItemByProperties(string? title, bool? isCompleted)
         {
-            return await _context.TodoItems.FirstOrDefaultAsync(x =>
-            !string.IsNullOrWhiteSpace(title) &&
-            !string.IsNullOrWhiteSpace(x.Title) &&
-            x.Title.ToLower() == title.ToLower() &&
-            isCompleted.HasValue &&
-            x.IsCompleted.HasValue &&
-            isCompleted.Value == x.IsCompleted.Value);
+            var todoItem = await _context.TodoItems
+                .FirstOrDefaultAsync(x =>
+                (!string.IsNullOrWhiteSpace(title) && x.Title.ToLower() == title.ToLower()) &&
+                isCompleted.HasValue && x.IsCompleted == isCompleted.Value);
+
+            return todoItem == null ? null : MapToDto(todoItem);
         }
 
+        // маппинг между TodoItem и TodoItemDto
+        public TodoItemDto MapToDto(TodoItem todoItem)
+        {
+            return new TodoItemDto
+            {
+                Id = todoItem.Id,
+                Title = todoItem.Title,
+                IsCompleted = todoItem.IsCompleted
+            };
+        }
+
+        public async Task DeleteAllTodoItems()
+        {
+            _context.TodoItems.RemoveRange(_context.TodoItems);
+            await _context.SaveChangesAsync();
+        }
 
     }
 

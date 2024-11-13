@@ -16,9 +16,9 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var todoItem = context.ActionArguments["todoItem"] as TodoItem;
+            var todoItemDto = context.ActionArguments["todoItemDto"] as TodoItemDto;
 
-            if (todoItem == null)
+            if (todoItemDto == null)
             {
                 context.ModelState.AddModelError("TodoItem", "TodoItem object is null");
                 var problemDetails = new ValidationProblemDetails(context.ModelState)
@@ -30,8 +30,8 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
             }
             else
             {
-                var existingTodoItem = await _todoItemService.GetTodoItemByProperties(todoItem.Title, todoItem.IsCompleted);
-                if (existingTodoItem != null)
+                var existingTodoItemDto = await _todoItemService.GetTodoItemByProperties(todoItemDto.Title, todoItemDto.IsCompleted);
+                if (existingTodoItemDto != null)
                 {
                     context.ModelState.AddModelError("TodoItem", "TodoItem already exists");
                     var problemDetails = new ValidationProblemDetails(context.ModelState)

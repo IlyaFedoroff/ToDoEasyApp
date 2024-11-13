@@ -17,9 +17,9 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var id = context.ActionArguments["id"] as int?;
-            var todoItem = context.ActionArguments["todoItem"] as TodoItem;
+            var todoItemDto = context.ActionArguments["todoItemDto"] as TodoItemDto;
 
-            if (id.HasValue && todoItem != null && id != todoItem.Id)
+            if (id.HasValue && todoItemDto != null && id != todoItemDto.Id)
             {
                 context.ModelState.AddModelError("TodoItemId", "TodoItemId is not the same as id");
                 var problemDetails = new ValidationProblemDetails(context.ModelState)
