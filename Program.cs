@@ -2,35 +2,34 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using ToDoEasyApp.Data;
+using ToDoEasyApp.Filters.ExceptionFilters;
+using ToDoEasyApp.Filters.IAsyncActionFilters;
 using ToDoEasyApp.Models;
+using ToDoEasyApp.Services;
 
-// Program.cs (ASP.NET Core 6+)
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddScoped<TodoItemService>();
+builder.Services.AddScoped<TodoItem_ValidateTodoItemIdIAsyncActionFilter>();
+builder.Services.AddScoped<TodoItem_ValidateCreateTodoItemIAsyncActionFilter>();
+builder.Services.AddScoped<TodoItem_ValidateUpdateTodoItemIAsyncActionFilter>();
+builder.Services.AddScoped<TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter>();
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowClientApp",
+//        builder => builder.WithOrigins("https://localhost:4200")
+//        .AllowAnyHeader()
+//        .AllowAnyMethod());
+//});
+
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql("Host=localhost;Port=5432;Database=todoapp;Username=postgres;Password=Lapka"));
-
-// Add Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//app.UseHttpsRedirection();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-
-app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();

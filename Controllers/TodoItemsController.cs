@@ -2,91 +2,75 @@
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
-    using ToDoEasyApp.Data;
+    using ToDoEasyApp.Filters.ExceptionFilters;
+    using ToDoEasyApp.Filters.IAsyncActionFilters;
     using ToDoEasyApp.Models;
+    using ToDoEasyApp.Services;
 
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
     {
         // services configs client git dto
-        private readonly ApplicationDbContext _context;
+        private readonly TodoItemService _todoItemService;
 
-        public TodoItemsController(ApplicationDbContext context)
+        public TodoItemsController(TodoItemService todoItemService)
         {
-            _context = context;
+            _todoItemService = todoItemService;
         }
 
-        // GET
-        // получить все задачи
+        // GET todoitems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+
+            var todoItems = await _todoItemService.GetAllTodoItems();
+            return Ok(todoItems);
         }
-        // запрос GET по ID
-        // получить конкретную задачу по номеру
+
+        // GET todoitem
+        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
+        public async Task<ActionResult<TodoItem>> GetTodoItemById(int id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
-            if (todoItem == null)
-            {
-                return NotFound();
-            }
-            return todoItem;
+            return Ok(await _todoItemService.GetTodoItem(id));
         }
-        // отправить задачу
+
+        // Create a todoItem
         [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
+        [ServiceFilter(typeof(TodoItem_ValidateCreateTodoItemIAsyncActionFilter))]
+        public async Task<ActionResult<TodoItem>> PostTodoItem([FromBody] TodoItem todoItem)
         {
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+            await _todoItemService.AddTodoItem(todoItem);
+
+            return CreatedAtAction(nameof(GetTodoItemById),
+                new { id = todoItem.Id },
+                todoItem);
         }
 
-        // изменить задачу
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(int id, TodoItem todoItem)
-        {
-            todoItem.Id = id;
 
-            _context.Entry(todoItem).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TodoItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        // Update todoItem
+        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
+        [ServiceFilter(typeof(TodoItem_ValidateUpdateTodoItemIAsyncActionFilter))]
+        [ServiceFilter(typeof(TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter))]   // этот фильтр не срабатывает (должен работать когда во время обновления кто-то удалил объект todoItem)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<TodoItem>> PutTodoItem(int id, TodoItem todoItem)
+        {
+            var updatedTodoItem = await _todoItemService.UpdateTodoItem(todoItem, id);
+            //return Ok(updatedTodoItem);
             return NoContent();
         }
-        // удалить
+
+
+        // DELETE todoitem
+        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(int id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
-            if (todoItem == null)
-            {
-                return NotFound();
-            }
+            var todoItem = await _todoItemService.GetTodoItem(id);
+            await _todoItemService.DeleteTodoItem(id);
 
-            _context.TodoItems.Remove(todoItem);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        private bool TodoItemExists(int id)
-        {
-            return _context.TodoItems.Any(e => e.Id == id);
+            return Ok(todoItem);
         }
     }
 

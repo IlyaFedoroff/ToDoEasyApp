@@ -1,11 +1,24 @@
-﻿namespace ToDoEasyApp.Models
+﻿using System.ComponentModel.DataAnnotations;
+using ToDoEasyApp.Models.Validations;
+
+namespace ToDoEasyApp.Models
 {
     public class TodoItem
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public bool IsCompleted { get; set; }
+        public TodoItem()
+        {
+            IsCompleted = false;    //   значение по умолчанию
+        }
 
-        // Person person;
+        [Required]
+        public int Id { get; set; }
+
+        [Required]
+        [TodoItem_EnsureTitleIsCorrect]
+        public string? Title { get; set; }
+
+        [Required]
+        public bool? IsCompleted { get; set; }
+
     }
 }
