@@ -8,10 +8,12 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
     public class TodoItem_ValidateUpdateTodoItemIAsyncActionFilter : IAsyncActionFilter
     {
         private readonly TodoItemService _todoItemService;
+        private readonly ILogger<TodoItem_ValidateUpdateTodoItemIAsyncActionFilter> _logger;
 
-        public TodoItem_ValidateUpdateTodoItemIAsyncActionFilter(TodoItemService todoItemService)
+        public TodoItem_ValidateUpdateTodoItemIAsyncActionFilter(TodoItemService todoItemService, ILogger<TodoItem_ValidateUpdateTodoItemIAsyncActionFilter> logger)
         {
             _todoItemService = todoItemService;
+            _logger = logger;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -27,6 +29,7 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
                     Status = StatusCodes.Status400BadRequest
                 };
                 context.Result = new BadRequestObjectResult(problemDetails);
+                _logger.LogWarning($"TodoItemId {todoItemDto.Id} is not the same as id {id}");
                 return;
             }
 

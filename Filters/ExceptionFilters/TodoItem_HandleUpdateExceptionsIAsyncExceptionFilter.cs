@@ -8,10 +8,12 @@ namespace ToDoEasyApp.Filters.ExceptionFilters
     public class TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter : IAsyncExceptionFilter
     {
         private readonly TodoItemService _todoItemService;
+        private readonly ILogger<TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter> _logger;
 
-        public TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter(TodoItemService todoItemService)
+        public TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter(TodoItemService todoItemService, ILogger<TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter> logger)
         {
             _todoItemService = todoItemService;
+            _logger = logger;
         }
 
         public async Task OnExceptionAsync(ExceptionContext context)
@@ -28,6 +30,7 @@ namespace ToDoEasyApp.Filters.ExceptionFilters
                         Status = StatusCodes.Status404NotFound
                     };
                     context.Result = new NotFoundObjectResult(problemDetails);
+                    _logger.LogWarning($"TodoItemId {todoItemDtoId} does not exist anymore");
                     return;
                 }
             }

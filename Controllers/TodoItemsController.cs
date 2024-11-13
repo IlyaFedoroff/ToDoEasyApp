@@ -6,6 +6,7 @@
     using ToDoEasyApp.Filters.IAsyncActionFilters;
     using ToDoEasyApp.Models;
     using ToDoEasyApp.Services;
+    using Microsoft.Extensions.Logging;
 
     [Route("api/[controller]")]
     [ApiController]
@@ -13,17 +14,20 @@
     {
         // services configs client git dto
         private readonly TodoItemService _todoItemService;
+        private readonly ILogger<TodoItemsController> _logger;
 
-        public TodoItemsController(TodoItemService todoItemService)
+        public TodoItemsController(TodoItemService todoItemService, ILogger<TodoItemsController> logger)
         {
             _todoItemService = todoItemService;
+            _logger = logger;
+
         }
 
         // GET todoitems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItems()
         {
-
+            _logger.LogInformation("Getting all todo items");
             var todoItems = await _todoItemService.GetAllTodoItems();
             return Ok(todoItems);
         }
@@ -80,6 +84,7 @@
         public async Task<IActionResult> DeleteAllTodoItems()
         {
             await _todoItemService.DeleteAllTodoItems();
+            _logger.LogInformation("Deleted all todoItems");
             return NoContent(); // Возвращаем статус 204 No Content для успешного удаления
         }
 

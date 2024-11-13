@@ -8,10 +8,12 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
     public class TodoItem_ValidateCreateTodoItemIAsyncActionFilter : IAsyncActionFilter
     {
         private readonly TodoItemService _todoItemService;
+        private readonly ILogger<TodoItem_ValidateCreateTodoItemIAsyncActionFilter> _logger;
 
-        public TodoItem_ValidateCreateTodoItemIAsyncActionFilter(TodoItemService todoItemService)
+        public TodoItem_ValidateCreateTodoItemIAsyncActionFilter(TodoItemService todoItemService, ILogger<TodoItem_ValidateCreateTodoItemIAsyncActionFilter> logger)
         {
             _todoItemService = todoItemService;
+            _logger = logger;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -26,6 +28,7 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
                     Status = StatusCodes.Status400BadRequest
                 };
                 context.Result = new BadRequestObjectResult(problemDetails);
+                _logger.LogWarning("TodoItem object is null");
                 return;
             }
             else
@@ -39,6 +42,7 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
                         Status = StatusCodes.Status400BadRequest
                     };
                     context.Result = new BadRequestObjectResult(problemDetails);
+                    _logger.LogWarning("TodoItem already exists");
                     return;
 
                 }

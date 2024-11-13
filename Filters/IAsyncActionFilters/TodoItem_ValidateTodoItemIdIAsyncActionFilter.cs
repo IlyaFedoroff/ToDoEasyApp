@@ -7,10 +7,12 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
     public class TodoItem_ValidateTodoItemIdIAsyncActionFilter : IAsyncActionFilter
     {
         private readonly TodoItemService _todoItemService;
+        private readonly ILogger<TodoItem_ValidateTodoItemIdIAsyncActionFilter> _logger;
 
-        public TodoItem_ValidateTodoItemIdIAsyncActionFilter(TodoItemService todoItemService)
+        public TodoItem_ValidateTodoItemIdIAsyncActionFilter(TodoItemService todoItemService, ILogger<TodoItem_ValidateTodoItemIdIAsyncActionFilter> logger)
         {
             _todoItemService = todoItemService;
+            _logger = logger;
         }
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -27,6 +29,7 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
                         Status = StatusCodes.Status400BadRequest
                     };
                     context.Result = new BadRequestObjectResult(problemDetails);
+                    _logger.LogWarning($"Id {todoItemId} is invalid");
                     return;
                 }
                 else if (!await _todoItemService.TodoItemExists(todoItemId.Value))
@@ -37,6 +40,7 @@ namespace ToDoEasyApp.Filters.IAsyncActionFilters
                         Status = StatusCodes.Status404NotFound
                     };
                     context.Result = new NotFoundObjectResult(problemDetails);
+                    _logger.LogWarning($"TodoItem with id {todoItemId} does not exist");
                     return;
                 }
             }

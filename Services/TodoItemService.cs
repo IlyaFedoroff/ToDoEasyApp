@@ -8,10 +8,12 @@ namespace ToDoEasyApp.Services
     public class TodoItemService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<TodoItemService> _logger;
 
-        public TodoItemService(ApplicationDbContext context)
+        public TodoItemService(ApplicationDbContext context, ILogger<TodoItemService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<bool> TodoItemExists(int id)
@@ -21,27 +23,30 @@ namespace ToDoEasyApp.Services
 
         public async Task<TodoItemDto?> GetTodoItem(int id)
         {
+            _logger.LogInformation($"Getting TodoItem with id {id}");
             var todoItem = await _context.TodoItems.FirstOrDefaultAsync(x => x.Id == id);
+            if (todoItem == null)
+                _logger.LogWarning($"TodoItem with id {id} is not found");
             return todoItem == null ? null : MapToDto(todoItem);
         }
 
         public async Task<IEnumerable<TodoItemDto>> GetAllTodoItems()
         {
-            var todoItems =  await _context.TodoItems.ToListAsync();
+            var todoItems = await _context.TodoItems.ToListAsync();
             return todoItems.Select(MapToDto);
         }
         // how adding
         public async Task<TodoItemDto> AddTodoItem(TodoItemDto todoItemDto)
         {
-            
-            
+
+
             //TodoItem todoItem = new TodoItem();
             //todoItem.Id = maxId + 1;
             //todoItem.CreatedAt = DateTime.UtcNow;
             //todoItem.Title = todoItemDto.Title;
             //todoItem.IsCompleted = todoItemDto.IsCompleted;
 
-            int maxId = _context.TodoItems.Max(x => x.Id);
+            var maxId = _context.TodoItems.Any() ? _context.TodoItems.Max(x => x.Id) : 0;
             Console.WriteLine($"maxId: {maxId}");
             // Создаём новый объект TodoItem
             TodoItem todoItem = new TodoItem
@@ -58,10 +63,11 @@ namespace ToDoEasyApp.Services
 
         public async Task<TodoItemDto?> UpdateTodoItem(TodoItemDto updatedTodoItemDto, int id)
         {
-            
+
             var todoItem = await _context.TodoItems.FindAsync(id);
             if (todoItem == null)
             {
+                _logger.LogWarning($"There is no todoItem with id {id}");
                 return null;    //   если елемент не найден
             }
 
@@ -79,12 +85,14 @@ namespace ToDoEasyApp.Services
             var todoItem = await _context.TodoItems.FindAsync(todoItemid);
             if (todoItem == null)
             {
+                _logger.LogWarning($"There is no todoItem with id {todoItemid}");
                 return false;
             }
 
             // hard DELETE
             _context.TodoItems.Remove(todoItem);
             await _context.SaveChangesAsync();
+            _logger.LogWarning($"Deleted todoItem with id {todoItem}");
             return true;
         }
 
