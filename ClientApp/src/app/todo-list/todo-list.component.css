@@ -1,0 +1,174 @@
+/* Подключение шрифта по умолчанию */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #f4f4f9;
+}
+
+/* Стили для логотипа */
+.logo {
+  width: 40px; /* Размер логотипа, можно изменить */
+  height: 40px; /* Размер логотипа, можно изменить */
+  margin-right: 10px; /* Отступ справа от логотипа */
+}
+
+
+/* Общие стили для контейнера задач */
+.todo-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок списка задач */
+.todo-header {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* Контейнер для ввода задачи */
+.todo-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+/* Подписи для полей */
+.todo-label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+/* Ввод текста для добавления и редактирования задач */
+input[type="text"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* Кнопки */
+.todo-button, .search-toggle-button, .edit-btn, .delete-btn, .cancel-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.todo-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+  .todo-button:hover {
+    background-color: #45a049;
+  }
+
+.search-toggle-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+  .search-toggle-button:hover {
+    background-color: #1976D2;
+  }
+
+.edit-btn {
+  background-color: #FF9800;
+  color: white;
+}
+
+  .edit-btn:hover {
+    background-color: #FB8C00;
+  }
+
+.delete-btn {
+  background-color: #F44336;
+  color: white;
+}
+
+  .delete-btn:hover {
+    background-color: #D32F2F;
+  }
+
+.cancel-button {
+  background-color: #9E9E9E;
+  color: white;
+}
+
+  .cancel-button:hover {
+    background-color: #757575;
+  }
+
+/* Стиль для завершённых задач */
+.completed {
+  text-decoration: line-through;
+  color: #999;
+}
+
+/* Стили для списка задач */
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.todo-checkbox-container {
+  display: flex;
+  align-items: center;
+}
+
+.todo-checkbox {
+  transform: scale(1.5); /* Увеличивает размер чекбокса */
+  margin-right: 10px; /* Добавляет отступ между чекбоксом и текстом */
+}
+
+/* Стили для отображения задачи */
+.todo-title {
+  font-size: 16px;
+  font-weight: normal;
+  flex-grow: 1;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+  .search-container input {
+    padding: 8px;
+    width: 100%;
+  }
+
+button {
+  margin-top: 5px;
+}
+
+/* Стили для контейнера при пустом списке */
+.todo-item.empty {
+  font-style: italic;
+  color: #888;
+}

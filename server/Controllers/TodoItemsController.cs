@@ -45,8 +45,11 @@
         // Create a todoItem
         [HttpPost]
         [ServiceFilter(typeof(TodoItem_ValidateCreateTodoItemIAsyncActionFilter))]
-        public async Task<ActionResult<TodoItemDto>> PostTodoItem([FromBody] TodoItemDto todoItemDto)
+        public async Task<ActionResult<TodoItemDto>> PostTodoItem(TodoItemDto todoItemDto)
         {
+            _logger.LogInformation("Полученные данные: Title={Title}, IsCompleted={IsCompleted}, Id={Id}",
+                todoItemDto.Title, todoItemDto.IsCompleted, todoItemDto.Id);
+
             await _todoItemService.AddTodoItem(todoItemDto);
 
             return CreatedAtAction(nameof(GetTodoItemById),
@@ -60,7 +63,7 @@
         [ServiceFilter(typeof(TodoItem_ValidateUpdateTodoItemIAsyncActionFilter))]
         [ServiceFilter(typeof(TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter))]   // этот фильтр не срабатывает (должен работать когда во время обновления кто-то удалил объект todoItem)
         [HttpPut("{id}")]
-        public async Task<ActionResult<TodoItem>> PutTodoItem(int id, [FromBody] TodoItemDto todoItemDto)
+        public async Task<ActionResult<TodoItemDto>> PutTodoItem(int id, [FromBody] TodoItemDto todoItemDto)
         {
             var updatedTodoItemDto = await _todoItemService.UpdateTodoItem(todoItemDto, id);
             //return Ok(updatedTodoItem);

@@ -1,0 +1,328 @@
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+
+<div class="todo-container">
+  <div class="todo-header">My To-Do List</div>
+  <!--<img src="assets/images/logo.png" alt="My Todo App Logo" class="logo" />-->
+  <!-- Форма для добавления задачи -->
+  <div class="todo-input-container">
+    <label for="newTodo" class="todo-label">Add a new task:</label>
+    <input id="newTodo" type="text" [(ngModel)]="newTodoTitle" placeholder="Enter task..." />
+    <button (click)="addTodo()" class="todo-button">Add</button>
+  </div>
+
+  <!-- Кнопка поиска -->
+  <button (click)="toggleSearch()" class="search-toggle-button">
+    {{ searchActive ? 'Cancel Search' : 'Search' }}
+  </button>
+
+  <!-- Поле для поиска задач -->
+  <div *ngIf="searchActive" class="search-container">
+    <label for="searchInput" class="todo-label">Search tasks:</label>
+    <input id="searchInput" type="text" [(ngModel)]="filterText" placeholder="Search tasks..." />
+  </div>
+
+  <!-- Список задач -->
+  <div *ngFor="let todo of filteredTodoItems" class="todo-item">
+    <div *ngIf="todo.isEditing; else displayMode">
+      <label for="editTodo" class="todo-label">Edit task:</label>
+      <input id="editTodo" [(ngModel)]="todo.title" />
+      <button (click)="saveTodoItem(todo)" class="todo-button">Save</button>
+      <button (click)="cancelEdit(todo)" class="cancel-button">Cancel</button>
+    </div>
+
+    <!-- Режим отображения задачи -->
+    <ng-template #displayMode>
+      <span [class.completed]="todo.isCompleted" class="todo-title">{{ todo.title }}</span>
+      <input type="checkbox" [(ngModel)]="todo.isCompleted" (change)="updateTodoCompletion(todo)" />
+      <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
+      <button class="delete-btn" (click)="deleteTodoItem(todo.id)">Delete</button>
+    </ng-template>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!--<head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+
+<div class="todo-container">
+  <div class="todo-header">My To-Do List</div>-->
+  <!--<img src="assets/images/logo.png" alt="My Todo App Logo" class="logo" />-->
+  <!-- Форма для добавления задачи -->
+  <!--<div class="todo-input-container">
+    <label for="newTodo" class="todo-label">Add a new task:</label>
+    <input id="newTodo" type="text" [(ngModel)]="newTodoTitle" placeholder="Enter task..." />
+    <button (click)="addTodo()" class="todo-button">Add</button>
+  </div>-->
+
+  <!-- Кнопка поиска -->
+  <!--<button (click)="toggleSearch()" class="search-toggle-button">
+    {{ searchActive ? 'Cancel Search' : 'Search' }}
+  </button>-->
+
+  <!-- Поле для поиска задач -->
+  <!--<div *ngIf="searchActive" class="search-container">
+    <label for="searchInput" class="todo-label">Search tasks:</label>
+    <input id="searchInput" type="text" [(ngModel)]="filterText" placeholder="Search tasks..." />
+  </div>-->
+
+  <!-- Список задач -->
+  <!--<div *ngFor="let todo of filteredTodoItems" class="todo-item">
+    <div *ngIf="todo.isEditing; else displayMode">
+      <label for="editTodo" class="todo-label">Edit task:</label>
+      <input id="editTodo" [(ngModel)]="todo.title" />
+      <button (click)="saveTodoItem(todo)" class="todo-button">Save</button>
+      <button (click)="cancelEdit(todo)" class="cancel-button">Cancel</button>
+    </div>-->
+
+    <!-- Режим отображения задачи -->
+    <!--<ng-template #displayMode>
+      <span [class.completed]="todo.isCompleted" class="todo-title">{{ todo.title }}</span>
+      <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
+      <button class="delete-btn" (click)="deleteTodoItem(todo.id)">Delete</button>
+    </ng-template>
+  </div>
+</div>-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--<div class="todo-container">
+  <div class="todo-header">My To-Do List</div>
+
+<div>
+  <input type="text" [(ngModel)]="newTodoTitle" placeholder="Add a new task..." />
+  <button (click)="addTodo()">Add</button>
+</div>
+
+<button (click)="toggleSearch()">
+  {{ searchActive ? 'Cancel Search' : 'Search'}}
+</button>
+<div *ngIf="searchActive">
+  <input type="text" [(ngModel)]="filterText" placeholder="Search tasks..." />
+</div>
+
+<div *ngFor="let todo of filteredTodoItems" class="todo-item">
+  <div *ngIf="todo.isEditing; else displayMode">
+
+<input [(ngModel)]="todo.title" />
+  <button (click)="saveTodoItem(todo)">Save</button>
+  <button (click)="cancelEdit(todo)">Cancel</button>
+</div>
+<ng-template #displayMode>
+
+<span [class.completed]="todo.isCompleted" class="todo-title">
+        {{ todo.title }}
+      </span>
+      <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
+      <button class="delete-btn" (click)="deleteTodoItem(todo.id)">Delete</button>
+    </ng-template>
+  </div>
+</div>-->
+<!--<header>
+  <mat-toolbar color="primary">
+    <span>My Todo App</span>
+  </mat-toolbar>
+</header>
+
+<main>
+  <div class="todo-container">
+    <mat-card>
+      <mat-card-title>
+        My To-Do List
+      </mat-card-title>
+      <mat-card-content>
+         Форма для добавления нового элемента
+        <div class="form-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Add a new task</mat-label>
+            <input matInput [(ngModel)]="newTodoTitle" />
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="addTodo()">Add</button>
+        </div>
+
+         Поиск
+        <button mat-stroked-button color="accent" (click)="toggleSearch()">
+          {{ searchActive ? 'Cancel Search' : 'Search' }}
+        </button>
+        <div *ngIf="searchActive" class="form-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Search tasks...</mat-label>
+            <input matInput [(ngModel)]="filterText" />
+          </mat-form-field>
+        </div>
+
+         Список задач
+        <mat-list *ngIf="todoItems.length > 0">
+          <mat-list-item *ngFor="let todo of filteredTodoItems">
+            <div class="todo-item" *ngIf="!todo.isEditing; else editMode">
+              <span [class.completed]="todo.isCompleted">{{ todo.title }}</span>
+              <button mat-icon-button color="primary" (click)="editTodoItem(todo)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteTodoItem(todo.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+
+          <ng-template #editMode let-todo="todo">
+            <div class="todo-edit">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Edit task</mat-label>
+                <input matInput [(ngModel)]="todo.title" />
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="saveTodoItem(todo)">Save</button>
+              <button mat-stroked-button color="warn" (click)="cancelEdit(todo)">Cancel</button>
+            </div>
+          </ng-template>
+        </mat-list>
+        <p *ngIf="todoItems.length === 0">Not found of any todo items!</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</main>
+
+<footer>
+  <mat-toolbar color="primary">
+    <span class="footer-text">© 2024 Todo App</span>
+  </mat-toolbar>
+</footer>-->
+<!--<div class="todo-container">
+  <div class="todo-header">My To-Do List</div>
+
+<div>
+  <input type="text" [(ngModel)]="newTodoTitle" placeholder="Add a new task..." />
+  <button (click)="addTodo()">Add</button>
+</div>
+
+<button (click)="toggleSearch()">
+  {{ searchActive ? 'Cancel Search' : 'Search'}}
+</button>
+<div *ngIf="searchActive">
+  <input type="text" [(ngModel)]="filterText" placeholder="Search tasks..." />
+</div>
+
+<div *ngFor="let todo of filteredTodoItems" class="todo-item">
+  <div *ngIf="todo.isEditing; else displayMode">
+
+<input [(ngModel)]="todo.title" />
+  <button (click)="saveTodoItem(todo)">Save</button>
+  <button (click)="cancelEdit(todo)">Cancel</button>
+</div>
+<ng-template #displayMode>
+
+<span [class.completed]="todo.isCompleted" class="todo-title">
+        {{ todo.title }}
+      </span>
+      <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
+      <button class="delete-btn" (click)="deleteTodoItem(todo.id)">Delete</button>
+    </ng-template>
+  </div>
+</div>-->
+<!--<header>
+  <mat-toolbar color="primary">
+    <span>My Todo App</span>
+  </mat-toolbar>
+</header>
+
+<main>
+  <div class="todo-container">
+    <mat-card>
+      <mat-card-title>
+        My To-Do List
+      </mat-card-title>
+      <mat-card-content>
+         Форма для добавления нового элемента
+        <div class="form-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Add a new task</mat-label>
+            <input matInput [(ngModel)]="newTodoTitle" />
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="addTodo()">Add</button>
+        </div>
+
+         Поиск
+        <button mat-stroked-button color="accent" (click)="toggleSearch()">
+          {{ searchActive ? 'Cancel Search' : 'Search' }}
+        </button>
+        <div *ngIf="searchActive" class="form-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Search tasks...</mat-label>
+            <input matInput [(ngModel)]="filterText" />
+          </mat-form-field>
+        </div>
+
+         Список задач
+        <mat-list *ngIf="todoItems.length > 0">
+          <mat-list-item *ngFor="let todo of filteredTodoItems">
+            <div class="todo-item" *ngIf="!todo.isEditing; else editMode">
+              <span [class.completed]="todo.isCompleted">{{ todo.title }}</span>
+              <button mat-icon-button color="primary" (click)="editTodoItem(todo)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteTodoItem(todo.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+
+          <ng-template #editMode let-todo="todo">
+            <div class="todo-edit">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Edit task</mat-label>
+                <input matInput [(ngModel)]="todo.title" />
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="saveTodoItem(todo)">Save</button>
+              <button mat-stroked-button color="warn" (click)="cancelEdit(todo)">Cancel</button>
+            </div>
+          </ng-template>
+        </mat-list>
+        <p *ngIf="todoItems.length === 0">Not found of any todo items!</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</main>
+
+<footer>
+  <mat-toolbar color="primary">
+    <span class="footer-text">© 2024 Todo App</span>
+  </mat-toolbar>
+</footer>-->

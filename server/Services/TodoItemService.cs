@@ -38,16 +38,6 @@ namespace ToDoEasyApp.Services
         // how adding
         public async Task<TodoItemDto> AddTodoItem(TodoItemDto todoItemDto)
         {
-
-
-            //TodoItem todoItem = new TodoItem();
-            //todoItem.Id = maxId + 1;
-            //todoItem.CreatedAt = DateTime.UtcNow;
-            //todoItem.Title = todoItemDto.Title;
-            //todoItem.IsCompleted = todoItemDto.IsCompleted;
-
-            var maxId = _context.TodoItems.Any() ? _context.TodoItems.Max(x => x.Id) : 0;
-            Console.WriteLine($"maxId: {maxId}");
             // Создаём новый объект TodoItem
             TodoItem todoItem = new TodoItem
             {
