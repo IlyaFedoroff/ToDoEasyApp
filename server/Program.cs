@@ -1,22 +1,22 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using ToDoEasyApp.Data;
-using ToDoEasyApp.Filters.ExceptionFilters;
-using ToDoEasyApp.Filters.IAsyncActionFilters;
-using ToDoEasyApp.Models;
 using ToDoEasyApp.Services;
 using Serilog;
 using Microsoft.OpenApi.Models;
+using server.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using server.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<TodoItemService>();
-builder.Services.AddScoped<TodoItem_ValidateTodoItemIdIAsyncActionFilter>();
-builder.Services.AddScoped<TodoItem_ValidateCreateTodoItemIAsyncActionFilter>();
-builder.Services.AddScoped<TodoItem_ValidateUpdateTodoItemIAsyncActionFilter>();
-builder.Services.AddScoped<TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITodoService, TodoItemService>();
+
 
 
 // настройка Serilog
@@ -53,19 +53,38 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()); // Разрешить любые HTTP-методы
 });
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddDefaultPolicy(policy =>
-//    {
-//        policy.WithOrigins("http://localhost:4200") // Разрешить Angular
-//              .AllowAnyHeader() // Разрешить любые заголовки
-//              .AllowAnyMethod(); // Разрешить любые методы (GET, POST, PUT, DELETE и т.д.)
-//    });
-//});
-
 builder.Services.AddControllers();
+
+// настройка ApplicationDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// регистрация identity в DI-контейнере
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// настройка JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -74,10 +93,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
 }
-else
-{
-    
-}
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors("AllowClientApp");
 

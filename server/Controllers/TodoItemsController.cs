@@ -1,18 +1,15 @@
 ﻿namespace ToDoEasyApp.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
-    using ToDoEasyApp.Filters.ExceptionFilters;
-    using ToDoEasyApp.Filters.IAsyncActionFilters;
     using ToDoEasyApp.Models;
     using ToDoEasyApp.Services;
     using Microsoft.Extensions.Logging;
+    using System.Security.Claims;
 
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
     {
-        // services configs client git dto
         private readonly TodoItemService _todoItemService;
         private readonly ILogger<TodoItemsController> _logger;
 
@@ -25,68 +22,88 @@
 
         // GET todoitems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItems()
+        public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItemsAsync()
         {
             _logger.LogInformation("Getting all todo items");
-            var todoItems = await _todoItemService.GetAllTodoItems();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var todoItems = await _todoItemService.GetTodoItemsByUserAsync(userId);
             return Ok(todoItems);
         }
 
         // GET todoitem
-        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItemDto>> GetTodoItemById(int id)
+        public async Task<ActionResult<TodoItemDto>> GetTodoItemByIdAsync(int id)
         {
-            var todoItemDto = await _todoItemService.GetTodoItem(id);
-
-            return Ok(todoItemDto);
+            try
+            {
+                var todoItemDto = await _todoItemService.GetTodoItemByIdAsync(id);
+                if (todoItemDto == null)
+                {
+                    return NotFound(new { message = "Не нашли такой todoItem" });
+                }
+                return Ok(todoItemDto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // Create a todoItem
         [HttpPost]
-        [ServiceFilter(typeof(TodoItem_ValidateCreateTodoItemIAsyncActionFilter))]
-        public async Task<ActionResult<TodoItemDto>> PostTodoItem(TodoItemDto todoItemDto)
+        public async Task<ActionResult<TodoItemDto>> CreateTodoItemAsync([FromBody] TodoItemDto todoItemDto)
         {
             _logger.LogInformation("Полученные данные: Title={Title}, IsCompleted={IsCompleted}, Id={Id}",
                 todoItemDto.Title, todoItemDto.IsCompleted, todoItemDto.Id);
 
-            await _todoItemService.AddTodoItem(todoItemDto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var todoItem = await _todoItemService.CreateTodoItemAsync(todoItemDto, userId);
 
-            return CreatedAtAction(nameof(GetTodoItemById),
+            return CreatedAtAction(nameof(GetTodoItemsAsync),
                 new { id = todoItemDto.Id },
                 todoItemDto);
         }
 
 
         // Update todoItem
-        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
-        [ServiceFilter(typeof(TodoItem_ValidateUpdateTodoItemIAsyncActionFilter))]
-        [ServiceFilter(typeof(TodoItem_HandleUpdateExceptionsIAsyncExceptionFilter))]   // этот фильтр не срабатывает (должен работать когда во время обновления кто-то удалил объект todoItem)
         [HttpPut("{id}")]
-        public async Task<ActionResult<TodoItemDto>> PutTodoItem(int id, [FromBody] TodoItemDto todoItemDto)
+        public async Task<ActionResult<TodoItemDto>> PutTodoItemAsync([FromBody] TodoItemDto todoItemDto)
         {
-            var updatedTodoItemDto = await _todoItemService.UpdateTodoItem(todoItemDto, id);
-            //return Ok(updatedTodoItem);
-            return NoContent();
-        }
-
+            try
+            {
+                var updatedTodoItemDto = await _todoItemService.UpdateTodoItemAsync(todoItemDto);
+                if (updatedTodoItemDto == null)
+                {
+                    return NotFound(new { message = "Не нашли такой todoItem" });
+                }
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            }
 
         // DELETE todoitem
-        [ServiceFilter(typeof(TodoItem_ValidateTodoItemIdIAsyncActionFilter))]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodoItem(int id)
+        public async Task<IActionResult> DeleteTodoItemAsync(int todoItemId)
         {
-            var todoItemDto = await _todoItemService.GetTodoItem(id);
-            await _todoItemService.DeleteTodoItem(id);
-
-            return Ok(todoItemDto);
+            try
+            {
+                await _todoItemService.DeleteTodoItemAsync(todoItemId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpDelete]
         [Route("deleteAll")]
         public async Task<IActionResult> DeleteAllTodoItems()
         {
-            await _todoItemService.DeleteAllTodoItems();
+            await _todoItemService.DeleteAllTodoItemsAsync();
             _logger.LogInformation("Deleted all todoItems");
             return NoContent(); // Возвращаем статус 204 No Content для успешного удаления
         }

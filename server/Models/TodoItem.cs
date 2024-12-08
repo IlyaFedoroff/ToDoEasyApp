@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using server.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ToDoEasyApp.Models.Validations;
 
 namespace ToDoEasyApp.Models
 {
@@ -15,15 +15,18 @@ namespace ToDoEasyApp.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Автоинкремент для Id
         public int Id { get; set; }
 
-        [Required]
-        [TodoItem_EnsureTitleIsCorrect]
         public string? Title { get; set; }
 
-        [Required]
         public bool? IsCompleted { get; set; }
 
-        
         public DateTime CreatedAt { get; set; }
+
+
+        public string UserId { get; set; }
+        //public ApplicationUser User { get; set; }
 
     }
 }
+
+
+
