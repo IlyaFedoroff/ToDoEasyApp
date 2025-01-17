@@ -1,13 +1,36 @@
 <header>
   <nav class="navbar">
     <ul class="navbar-menu">
-      <a routerLink="/home" routerLinkActive="active">Домой</a>
-      <a routerLink="/todos" routerLinkActive="acitve">Дела</a>
-      <a routerLink="/about" routerLinkActive="active">О приложении</a>
-      <a routerLink="/contact" routerLinkActive="active">Контакты</a>
-      <a routerLink="/register" routerLinkActive="active">Регистрация</a>
-      <a routerLink="/login" routerLinkActive="active">Вход</a>
+      <li>
+        <a routerLink="/home" routerLinkActive="active">Домой</a>
+      </li>
+      <li>
+        <a routerLink="/todos" routerLinkActive="active">Дела</a>
+      </li>
+      <li>
+        <a routerLink="/about" routerLinkActive="active">О приложении</a>
+      </li>
+      <li>
+        <a routerLink="/contact" routerLinkActive="active">Контакты</a>
+      </li>
+
+      <ng-container *ngIf="!currentUser">
+        <li>
+          <a routerLink="/register" routerLinkActive="active">Регистрация</a>
+        </li>
+        <li>
+          <a routerLink="/login" routerLinkActive="active">Вход</a>
+        </li>
+      </ng-container>
+
+      <ng-container *ngIf="currentUser">
+        <li>
+          <span class="user-info">Привет, {{ currentUser.FirstName }}!</span>
+        </li>
+        <li>
+          <button (click)="logout()">Выйти</button>
+        </li>
+      </ng-container>
     </ul>
   </nav>
 </header>
-

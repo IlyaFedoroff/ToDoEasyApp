@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using server.Services;
+using System.Security.Claims;
 using ToDoEasyApp.Data;
 using ToDoEasyApp.Models;
 
@@ -35,10 +37,9 @@ namespace ToDoEasyApp.Services
             return todoItems.Select(MapToDto);
         }
 
-
-        public async Task<TodoItem> CreateTodoItemAsync(TodoItemDto todoItemDto, string userId)
+        public async Task<TodoItemDto> AddTodoItemAsync(TodoItemDto todoItemDto, string userId)
         {
-            TodoItem todoItem = new TodoItem
+            TodoItem todoItemToAdd = new TodoItem
             {
                 Title = todoItemDto.Title,
                 IsCompleted = todoItemDto.IsCompleted,
@@ -46,10 +47,20 @@ namespace ToDoEasyApp.Services
                 UserId = userId
             };
 
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
-            return todoItem;
+            _context.TodoItems.Add(todoItemToAdd);   // todoItem вернется с id
+            await _context.SaveChangesAsync();  // отправляется запрос к бд
+
+            var todoItemDtoToReturnDto = new TodoItemDto
+            {
+                Id = todoItemToAdd.Id,
+                Title = todoItemToAdd.Title,
+                IsCompleted = todoItemToAdd.IsCompleted
+            };
+
+            return todoItemDtoToReturnDto;
         }
+
+        //
 
         public async Task<TodoItemDto?> UpdateTodoItemAsync(TodoItemDto updatedTodoItemDto)
         {
@@ -104,7 +115,15 @@ namespace ToDoEasyApp.Services
                 _logger.LogWarning($"There is no todoItem with id {todoItemId}");
                 throw new KeyNotFoundException($"Todo item with id {todoItemId} was not found");
             }
-            return MapToDto(todoItem);
+
+            var todoItemFind = new TodoItemDto
+            {
+                Title = todoItem.Title,
+                IsCompleted = todoItem.IsCompleted,
+                Id = todoItem.Id
+            };
+
+            return todoItemFind;
         }
 
         // маппинг между TodoItem и TodoItemDto

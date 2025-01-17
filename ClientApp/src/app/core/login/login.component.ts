@@ -16,6 +16,7 @@ import { LoginModel } from '../../models/LoginModel';
 })
 export class LoginComponent {
   loginForm: FormGroup;
+  errorMessage: string | null = null;
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
@@ -24,23 +25,38 @@ export class LoginComponent {
     });
   }
 
-  onSubmit() {
+  onLogin(): void {
     if (this.loginForm.invalid) {
       return;
     }
+
+    this.errorMessage = null;
 
     const loginModel = new LoginModel(
       this.loginForm.value.email,
       this.loginForm.value.password
     );
 
-    this.authService.login(loginModel).subscribe(
-      response => {
+    this.authService.login(loginModel).subscribe({
+      next: (response: any) => {
         console.log("Пользователь успешно авторизовался", response);
+
+        // получаем данные пользователя
+        const userData = this.authService.getCurrentUser();
+        this.authService.setCurrentUser(userData);  // сохраняем данные пользователя
+
+        this.router.navigate(['/todos']); //   перенаправление на защищенную страницу
       },
-      error => {
+      error: (error) => {
         console.error("Авторизация не удалась", error);
-      }
-    )
+
+        // извлекаем сообщение об ошибке из ответа сервера
+        if (error.error && error.error.message) {
+          this.errorMessage = error.error.message;  // сохраняем сообщение об ошибке
+        } else {
+          this.errorMessage = "Произошла ошибка при авторизации. Попробуйте снова.";
+        }
+      },
+    });
   }
 }

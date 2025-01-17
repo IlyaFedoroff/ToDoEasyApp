@@ -4,14 +4,15 @@ import { HomeComponent } from './core/home/home.component';
 import { AboutComponent } from './core/about/about.component';
 import { ContactComponent } from './core/contact/contact.component';
 import { TodoListComponent } from './core/todo-list/todo-list.component';
-import { RegisterComponent } from './features/register/register.component';
-import { LoginComponent } from './features/login/login.component';
+import { RegisterComponent } from './core/register/register.component';
+import { LoginComponent } from './core/login/login.component';
+import { authGuard } from './features/guard/auth.guard';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
-  { path: 'todos', component: TodoListComponent },
+  { path: 'todos', component: TodoListComponent, canActivate: [authGuard] },  // защищенный маршрут
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent},
   { path: '', redirectTo: '/home', pathMatch: 'full' },

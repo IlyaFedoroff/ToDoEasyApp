@@ -69,6 +69,14 @@ header {
       color: #FFD700; /* Золотой цвет при наведении */
     }
 
+.mat-snack-bar-container {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.mat-snack-bar-action {
+    color: #FFD700;
+}
     
 
 /* Стили для футера */

@@ -4,7 +4,7 @@ namespace server.Services
 {
     public interface ITodoService
     {
-        Task<TodoItem> CreateTodoItemAsync(TodoItemDto todoItemDto, string userId);
+        Task<TodoItemDto> AddTodoItemAsync(TodoItemDto todoItemDto, string userId);
         Task<IEnumerable<TodoItem>> GetTodoItemsByUserAsync(string userId);
 
         Task<IEnumerable<TodoItemDto>> GetAllTodoItemsAsync();

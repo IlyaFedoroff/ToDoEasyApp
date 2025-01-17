@@ -8,6 +8,8 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\ClientApp\browser\</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="src\app\features\authinter\" />
+    <Folder Include="src\app\features\inter\" />
     <Folder Include="src\app\shared\" />
   </ItemGroup>
 </Project>

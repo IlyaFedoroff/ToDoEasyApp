@@ -18,12 +18,16 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class RegisterComponent {
   registerForm: FormGroup;
 
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+  isLoading: boolean = false;
+
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.registerForm = this.fb.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required]]
     });
   }
 
@@ -31,6 +35,8 @@ export class RegisterComponent {
     if (this.registerForm.invalid) {
       return;
     }
+
+    this.isLoading = true;  // Включить спиннер
 
     const registerModel = new RegisterModel(
       this.registerForm.value.firstName,
@@ -41,14 +47,35 @@ export class RegisterComponent {
 
     this.authService.register(registerModel).subscribe(
       (response) => {
+        const token = response.token;
+        this.authService.saveToken(token);
+        //localStorage.setItem('authToken', token);
         console.log("Регистрация пользователя прошла успешно", response);
-        this.router.navigate(['/login']);
+        this.successMessage = "Регистрация успешна! Теперь вы можете войти.";
+        this.errorMessage = null;
+        this.isLoading = false; //   Выключить спиннер
+
+        // Очистить форму, если нужно
+        //this.registerForm.reset();
+
+        // Перенаправить на страницу входа через небольшую задержку
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 3000);
       },
       (error) => {
         console.error("Регистрация не удалась", error);
-        //this.errorMessage = error.error.message;
+        this.successMessage = null;
+        this.isLoading = false;
+
+        // Обработка ошибки с выводом сообщения
+        if (error.error && error.error.message) {
+          this.errorMessage = `Ошибка: ${error.error.message}`;
+        } else {
+          this.errorMessage = "Что-то пошло не так. Попробуйте еще раз.";
+        }
       }
-    )
+    );
   }
 
 

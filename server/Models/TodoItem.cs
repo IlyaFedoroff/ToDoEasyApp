@@ -9,22 +9,22 @@ namespace ToDoEasyApp.Models
         public TodoItem()
         {
             IsCompleted = false;    //   значение по умолчанию
-            CreatedAt = DateTime.Now;
+            CreatedAt = DateTime.UtcNow;
+            Title = "standart name";    // стандартный случай когда не получаем Title
         }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Автоинкремент для Id
         public int Id { get; set; }
+        [Required]
+        public string Title { get; set; }
 
-        public string? Title { get; set; }
-
-        public bool? IsCompleted { get; set; }
+        public bool IsCompleted { get; set; }
 
         public DateTime CreatedAt { get; set; }
-
-
+        [Required]
         public string UserId { get; set; }
-        //public ApplicationUser User { get; set; }
-
+        [ForeignKey("UserId")]
+        public ApplicationUser User { get; set; }
     }
 }
 

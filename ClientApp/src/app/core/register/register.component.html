@@ -1,11 +1,24 @@
 <div class="register-container">
   <h2>Регистрация</h2>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="spinner">
+    Загрузка...
+  </div>
+
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="firstName">Имя</label>
       <input id="firstName"
              type="text"
-             formControllerName="firstName"
+             formControlName="firstName"
              class="form-control"
              placeholder="Введите имя" />
       <div *ngIf="registerForm.controls['firstName'].invalid && registerForm.controls['firstName'].touched" class="error">
@@ -17,7 +30,7 @@
       <label for="lastName">Фамилия</label>
       <input id="lastName"
              type="text"
-             formControllerName="lastName"
+             formControlName="lastName"
              class="form-control"
              placeholder="Введите фамилию" />
       <div *ngIf="registerForm.controls['lastName'].invalid && registerForm.controls['lastName'].touched" class="error">
@@ -45,7 +58,7 @@
              class="form-control"
              placeholder="Введите пароль" />
       <div *ngIf="registerForm.controls['password'].invalid && registerForm.controls['password'].touched" class="error">
-        Пароль должен содержать не менее 6 символов.
+        <!--Пароль должен содержать не менее 6 символов.-->
       </div>
     </div>
 

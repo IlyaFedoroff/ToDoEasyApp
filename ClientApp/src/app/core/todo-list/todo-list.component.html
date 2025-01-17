@@ -39,7 +39,8 @@
       <span [class.completed]="todo.isCompleted" class="todo-title">{{ todo.title }}</span>
       <input type="checkbox" [(ngModel)]="todo.isCompleted" (change)="updateTodoCompletion(todo)" />
       <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
-      <button class="delete-btn" (click)="deleteTodoItem(todo.id)">Delete</button>
+      <label>{{ todo.id! }}</label>
+      <button class="delete-btn" (click)="deleteTodoItem(todo.id!)">Delete</button>
     </ng-template>
   </div>
 </div>

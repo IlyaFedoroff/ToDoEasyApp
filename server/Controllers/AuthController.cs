@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using server.Models;
@@ -30,6 +31,7 @@ namespace server.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -50,19 +52,15 @@ namespace server.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
+            var user = await _userManager.FindByEmailAsync(loginModel.Email);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginModel.Password))
             {
                 return Unauthorized(new { message = "Некорректные почта или пароль" });
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-            if (!result.Succeeded)
-            {
-                return Unauthorized(new { message = "Некорректные почта или пароль" });
-            }
+
 
             // генерация JWT
             var token = GenerateJwtToken(user);
@@ -71,16 +69,22 @@ namespace server.Controllers
 
         private string GenerateJwtToken(ApplicationUser user)
         {
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                throw new InvalidOperationException("JWT Key is not configured.");
+            }
+
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id), // ID пользователя
-                new Claim(JwtRegisteredClaimNames.Email, user.Email), // Email как claim
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? "ThereIsNoEmail@mail.ru"), // Email как claim
                 new Claim("FirstName", user.FirstName), // Дополнительный claim для имени
                 new Claim("LastName", user.LastName), // Дополнительный claim для фамилии
                 new Claim("DateOfBirth", user.DateOfBirth.ToString("yyyy-MM-dd")), // Дополнительный claim для даты рождения
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
