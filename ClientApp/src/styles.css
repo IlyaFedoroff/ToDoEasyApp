@@ -29,12 +29,29 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* Стили для Snackbar с ошибкой */
+.error-snackbar {
+  background-color: #f44336; /* Красный цвет */
+  color: white;
+}
+
+/* Стили для информационного Snackbar */
+.info-snackbar {
+  background-color: #2196f3; /* Синий цвет */
+  color: white;
+}
+
+
+
 /* Стили для хедера */
 header {
   background-color: #4CAF50; /* Зеленый цвет */
   color: white;
   padding: 10px 0;
 }
+
+
+
 
 .navbar {
   display: flex;
@@ -77,7 +94,9 @@ header {
 .mat-snack-bar-action {
     color: #FFD700;
 }
-    
+
+
+
 
 /* Стили для футера */
 footer {

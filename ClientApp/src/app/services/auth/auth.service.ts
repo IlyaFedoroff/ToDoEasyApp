@@ -28,7 +28,7 @@ export class AuthService {
 
   // сохранение токена и данных пользователя
   setCurrentUser(user: any): void {
-    console.log('Сохранение данных пользователя:', user);
+    //console.log('Сохранение данных пользователя:', user);
     this.currentUserSubject.next(user);   // обновляем состояние
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
@@ -78,14 +78,14 @@ export class AuthService {
 
   // декодирование токена
   decodeToken(token: string): any {
-    console.log("Декодирование токена: ", token);
+    //console.log("Декодирование токена: ", token);
     const decodedToken = this.jwtHelper.decodeToken(token);
-    console.log("Декодированный токен: ", decodedToken);
+    //console.log("Декодированный токен: ", decodedToken);
     return decodedToken;
   }
 
   saveToken(token: string) {
-    console.log("Токен сохранен:", token);
+    //console.log("Токен сохранен:", token);
     localStorage.setItem(this.tokenKey, token);
   }
 

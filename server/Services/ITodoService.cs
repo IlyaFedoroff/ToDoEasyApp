@@ -1,4 +1,5 @@
-﻿using ToDoEasyApp.Models;
+﻿using server.Models;
+using ToDoEasyApp.Models;
 
 namespace server.Services
 {
@@ -7,9 +8,16 @@ namespace server.Services
         Task<TodoItemDto> AddTodoItemAsync(TodoItemDto todoItemDto, string userId);
         Task<IEnumerable<TodoItem>> GetTodoItemsByUserAsync(string userId);
 
-        Task<IEnumerable<TodoItemDto>> GetAllTodoItemsAsync();
+        Task<IEnumerable<TypeTodoDto>> GetTypesAsync();
 
-        Task<TodoItemDto?> UpdateTodoItemAsync(TodoItemDto updatedTodoItemDto);
+        Task<IEnumerable<TodoItemForSearchDto>> GetAllTodoItemsAsync();
+
+        Task<List<TodoItemForSearchDto>> SearchTodosAsync(DateTime? createdAt, int? typeId, string? authorName);
+
+        Task<List<TodoItemForSearchDto>> SearchTodosDapperAsync(DateTime? createdAt, int? typeId, string? authorName);
+
+
+        Task<TodoItemDto?> UpdateTodoItemAsync(TodoItemDto updatedTodSoItemDto);
 
         Task<bool> DeleteTodoItemAsync(int todoItemId);
 

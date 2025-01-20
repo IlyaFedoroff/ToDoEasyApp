@@ -1,0 +1,41 @@
+<div class="search-container">
+  <h2>Поиск задач</h2>
+  <form (ngSubmit)="searchTodos()">
+    <div>
+      <label for="createdAt">Создан:</label>
+      <input type="date" id="createdAt" [(ngModel)]="createdAt" name="createdAt" >
+    </div>
+    <div>
+      <label for="typeId">Тип задачи:</label>
+      <select id="typeId" [(ngModel)]="typeId" name="typeId">
+        <option value="">Выберите тип задачи</option>
+        <option *ngFor="let type of taskTypes" [value]="type.id">
+          {{ type.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <label for="authorId">Автор:</label>
+      <select id="authorId" [(ngModel)]="authorId" name="authorId">
+        <option value="">Выберите автора</option>
+        <option *ngFor="let user of users" [value]="user.id">
+          {{ user.firstName }} {{ user.lastName }}
+        </option>
+      </select>
+    </div>
+    <button type="submit">Поиск</button>
+  </form>
+
+  <div *ngIf="searchResults.length > 0">
+    <h3>Результаты поиска</h3>
+    <ul>
+      <li *ngFor="let todo of searchResults">
+        <p><strong>Название:</strong> {{ todo.title }}</p>
+        <p><strong>Завершен:</strong> {{ todo.isCompleted ? 'Да' : 'Нет' }}</p>
+        <p><strong>Создано:</strong> {{ todo.createdAt | date: 'medium' }}</p>
+        <p><strong>Тип задачи:</strong> {{ todo.typeName }}</p>
+        <p><strong>Автор:</strong> {{ todo.authorName }}</p>
+      </li>
+    </ul>
+  </div>
+</div>

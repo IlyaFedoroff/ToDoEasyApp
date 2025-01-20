@@ -13,15 +13,15 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const jwtHelper = new JwtHelperService();
 
   const token = localStorage.getItem('authToken');
-    console.log("Токен получен в интерцепторе:", token);
-    console.log("Исходный запрос:", req);
+    //console.log("Токен получен в интерцепторе:", token);
+    //console.log("Исходный запрос:", req);
 
     if (token && !jwtHelper.isTokenExpired(token)) {
       const cloned = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${token}`)
       });
 
-      console.log("Запрос с добавленным токеном", cloned);
+      //console.log("Запрос с добавленным токеном", cloned);
 
       return next(cloned);
   }

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-
+import { TodoType } from '../../models/todoType';
 
 @Component({
   selector: 'app-todo-list',
@@ -21,11 +21,14 @@ export class TodoListComponent implements OnInit {
   todoItems: TodoItem[] = [];
   newTodoTitle: string = '';
   errorMessage: string | null = null;
+  selectedTypeId: number | null = null; // выбранный тип задачи
+  taskTypes: TodoType[] = [];
 
   constructor(private todoService: TodoService, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.loadTodoItems();
+    this.loadTaskTypes();
   }
 
   loadTodoItems() {
@@ -41,6 +44,17 @@ export class TodoListComponent implements OnInit {
         // логика которая выполняется после завершения потока
       }
     });
+  }
+
+  loadTaskTypes(): void {
+    this.todoService.getTaskTypes().subscribe(
+      (types) => {
+        this.taskTypes = types;
+      },
+      (error) => {
+        this.snackBar.open('Ошибка при загрузке типов задач', 'Закрыть', { duration: 3000 });
+      }
+    )
   }
 
   get filteredTodoItems() {
@@ -61,10 +75,11 @@ export class TodoListComponent implements OnInit {
   }
 
   addTodo() {
-    if (this.newTodoTitle.trim()) {
+    if (this.newTodoTitle.trim() && this.selectedTypeId !== null) {
       const newTodo: TodoItem = {
         title: this.newTodoTitle,
-        isCompleted: false
+        isCompleted: false,
+        typeId: this.selectedTypeId
       };
 
       this.todoItems.push(newTodo);
@@ -84,8 +99,12 @@ export class TodoListComponent implements OnInit {
       });
 
       this.newTodoTitle = '';
+      this.selectedTypeId = null;
+    } else {
+      this.snackBar.open('Заполните название и выберите тип задачи', 'Закрыть', { duration: 3000 });
     }
   }
+
 
   deleteTodoItem(id: number) {
     this.todoService.deleteTodoItem(id).subscribe(() => {
@@ -120,11 +139,18 @@ export class TodoListComponent implements OnInit {
       return;
     }
 
+    if (todo.typeId == null) {
+      this.snackBar.open('Выберите тип задачи', 'Закрыть', { duration: 3000 });
+      return;
+    }
+
     this.todoService.updateTodoItem(todo.id, todo).subscribe({
-    next: () => {
-      console.log("Todo item updated:", todo);
+      next: () => {
+        todo.isEditing = false;
+        this.snackBar.open('Задача успешно обновлена', 'Закрыть', { duration: 3000 });
     },
-    error: (error) => {
+      error: (error) => {
+        this.snackBar.open('Ошибка при обновлении задачи', 'Закрыть', { duration: 3000 });
         console.error("Error updating todo item", error);
     },
     complete: () => {

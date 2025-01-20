@@ -1,0 +1,23 @@
+<div *ngIf="users.length > 0; else noData">
+  <h2>Пользователи, отсортированные по количеству выполненных задач</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>Фамилия</th>
+        <th>Выполнено задач</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.firstName }}</td>
+        <td>{{ user.lastName }}</td>
+        <td>{{ user.completedTodosCount }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noData>
+  <p>Нет данных для отображения.</p>
+</ng-template>

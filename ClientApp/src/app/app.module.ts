@@ -18,6 +18,8 @@ import { LoginComponent } from './core/login/login.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './features/authinter/auth.interceptor';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { SearchTodoComponent } from './core/search-todo/search-todo.component';
+//import { UserListComponent } from './core/user-list/user-list.component';
 
 
 @NgModule({
@@ -30,7 +32,9 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
     AboutComponent,
     ContactComponent,
     RegisterComponent,
-    LoginComponent
+    LoginComponent,
+    SearchTodoComponent
+    //UserListComponent
   ],
   imports: [
     BrowserModule,

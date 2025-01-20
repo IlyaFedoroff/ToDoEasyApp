@@ -8,6 +8,7 @@
         public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             public DbSet<TodoItem> TodoItems { get; set; }
+            public DbSet<TypeTodo> TypeTodos { get; set; }
 
             public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
                 : base(options) { }
@@ -22,6 +23,13 @@
                     .WithMany(u => u.TodoItems) // У пользователя много TodoItem
                     .HasForeignKey(t => t.UserId)   // Внешний ключ - UserId
                     .OnDelete(DeleteBehavior.Cascade);  // Удаление пользователя удаляет все его TodoItem
+
+            // Настройка связи между TodoItem и TypeTodo
+            modelBuilder.Entity<TodoItem>()
+                .HasOne(t => t.Type)    // У TodoItem есть один тип
+                .WithMany()             // у Типа может быть много TodoItem
+                .HasForeignKey(t => t.TypeId)   // Внешний ключ - TypeId
+                .OnDelete(DeleteBehavior.Restrict); // Удаления типа не удаляет связанные TodoItem
 
                 // Дополнительные настройки
                 modelBuilder.Entity<TodoItem>()

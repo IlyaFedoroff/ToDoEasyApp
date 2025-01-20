@@ -7,6 +7,8 @@ import { TodoListComponent } from './core/todo-list/todo-list.component';
 import { RegisterComponent } from './core/register/register.component';
 import { LoginComponent } from './core/login/login.component';
 import { authGuard } from './features/guard/auth.guard';
+import { UserListComponent } from './core/user-list/user-list.component';
+import { SearchTodoComponent } from './core/search-todo/search-todo.component';
 
 export const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -14,9 +16,11 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   { path: 'todos', component: TodoListComponent, canActivate: [authGuard] },  // защищенный маршрут
   { path: 'register', component: RegisterComponent },
-  { path: 'login', component: LoginComponent},
+  { path: 'login', component: LoginComponent },
+  { path: 'rating', component: UserListComponent },
+  { path: 'search', component: SearchTodoComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: '**', redirectTo: '/home'},
+  { path: '**', redirectTo: '/home' }
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

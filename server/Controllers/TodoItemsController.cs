@@ -8,11 +8,12 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using server.Models;
+    using Npgsql;
     using Serilog.Core;
     using ToDoEasyApp.Data;
     using Microsoft.EntityFrameworkCore;
 
-    [Authorize]
+    
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
@@ -21,22 +22,18 @@
         private readonly ILogger<TodoItemsController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly ApplicationDbContext _context;
 
-        public TodoItemsController(TodoItemService todoItemService, ILogger<TodoItemsController> logger, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public TodoItemsController(TodoItemService todoItemService, ILogger<TodoItemsController> logger, UserManager<ApplicationUser> userManager)
         {
             _todoItemService = todoItemService;
             _logger = logger;
             _userManager = userManager;
-
-            _context = context;
-
         }
 
         // GET todoitems
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItemsAsync()
+        public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItemsByUserAsync()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("Получили userId={userId}", userId);
@@ -51,54 +48,17 @@
             return Ok(todoItems);
         }
 
-
-        // Create a todoItem
-        [HttpPost]
-        public async Task<ActionResult<TodoItemDto>> PostTodoItemAsync(TodoItemDto todoItemDto)
+        // GET all todoitems
+        [HttpGet("All")]
+        public async Task<ActionResult<IEnumerable<TodoItemForSearchDto>>> GetAllTodoItemsAsync()
         {
-
-            // Валидация модели
-            if (todoItemDto == null)
-            {
-                return BadRequest("Данные не могут быть пустыми.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            //var userId = User.FindFirst("sub")?.Value;
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("Полученные данные: Title={Title}, IsCompleted={IsCompleted}, userId={userId}",
-                todoItemDto.Title, todoItemDto.IsCompleted, userId);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
-            // проверяем, что пользователь существует
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound("Пользователь не найден.");
-            }
-
-            try
-            {
-                var addedTodoItemDto = await _todoItemService.AddTodoItemAsync(todoItemDto, userId);
+            _logger.LogInformation("");
 
 
-                //return CreatedAtAction(nameof(GetTodoItemAsync), new { id = addedTodoItemDto.Id }, addedTodoItemDto); не понимаю почему не работает :(
-                return StatusCode(StatusCodes.Status201Created, addedTodoItemDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при создании TodoItem: {Message}", ex.Message);
-                return StatusCode(500, "Произошла ошибка при обработке запроса.");
-            }
+            var todoItemsForSearch = await _todoItemService.GetAllTodoItemsAsync();
+
+            return Ok(todoItemsForSearch);
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItemDto>> GetTodoItemAsync(int id)
@@ -119,8 +79,71 @@
             }
         }
 
+        // получить все типы
+        [HttpGet("types")]
+        public async Task<ActionResult<TypeTodoDto>> GetTodoTypesAsync()
+        {
+
+            var todoTypes = await _todoItemService.GetTypesAsync();
+            return Ok(todoTypes);
+        }
+
+        // 
+
+
+        // Create a todoItem
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<TodoItemDto>> PostTodoItemAsync(TodoItemDto todoItemDto)
+        {
+
+            // Валидация модели
+            if (todoItemDto == null)
+            {
+                return BadRequest("Данные не могут быть пустыми.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("Полученные данные: Title={Title}, IsCompleted={IsCompleted}, userId={userId}, typeId={typeId}",
+                todoItemDto.Title, todoItemDto.IsCompleted, userId, todoItemDto.TypeId);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // проверяем, что пользователь существует
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+
+            try
+            {
+                var addedTodoItemDto = await _todoItemService.AddTodoItemAsync(todoItemDto, userId);
+
+
+                //return CreatedAtAction(nameof(GetTodoItemAsync), new { id = addedTodoItemDto.Id }, addedTodoItemDto); не понимаю почему не работает :(
+                return StatusCode(StatusCodes.Status201Created, addedTodoItemDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при создании TodoItem: {Message}", ex.Message);
+                return StatusCode(500, "Произошла ошибка при обработке запроса.");
+            }
+        }
+
+
+        
 
         // Update todoItem
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<TodoItemDto>> PutTodoItemAsync(int id, [FromBody] TodoItemDto todoItemDto)
         {
@@ -145,6 +168,7 @@
         }
 
         // DELETE todoitem
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItemAsync(int id)
         {
@@ -161,12 +185,36 @@
         }
 
         [HttpDelete]
+        [Authorize]
         [Route("deleteAll")]
         public async Task<IActionResult> DeleteAllTodoItems()
         {
             await _todoItemService.DeleteAllTodoItemsAsync();
             _logger.LogInformation("Deleted all todoItems");
             return NoContent(); // Возвращаем статус 204 No Content для успешного удаления
+        }
+
+
+        // найти задачи по дате создания, названию, автору.
+        [HttpGet("search")]
+        public async Task<ActionResult<List<TodoItemForSearchDto>>> SearchTodosAsync(
+            [FromQuery] DateTime? createdAt = null,
+            [FromQuery] int? typeId = null,
+            [FromQuery] string? authorId = null)
+        {
+            var todos = await _todoItemService.SearchTodosAsync(createdAt, typeId, authorId);         // ef
+            return Ok(todos);
+        }
+
+        // найти задачи по дате создания, названию, автору.
+        [HttpGet("search-dapper")]
+        public async Task<ActionResult<List<TodoItemForSearchDto>>> SearchTodosDapperAsync(
+            [FromQuery] DateTime? createdAt = null,
+            [FromQuery] int? typeId = null,
+            [FromQuery] string? authorId = null)
+        {
+            var todos = await _todoItemService.SearchTodosDapperAsync(createdAt, typeId, authorId);     // dapper
+            return Ok(todos);
         }
 
     }

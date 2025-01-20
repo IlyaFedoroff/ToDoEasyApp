@@ -25,7 +25,7 @@ export class HeaderComponent implements OnInit {
   }
 
   logout(): void {
-    console.log("в хедере вызываем через сервис AuthService");
+    //console.log("в хедере вызываем через сервис AuthService");
     this.authService.logout();
     //window.location.reload(); // перезагружаем страницу для обновления хедера
     this.router.navigate(['/login']);

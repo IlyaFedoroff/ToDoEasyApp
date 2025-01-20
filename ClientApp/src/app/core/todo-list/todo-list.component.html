@@ -11,6 +11,9 @@
   <div class="todo-input-container">
     <label for="newTodo" class="todo-label">Add a new task:</label>
     <input id="newTodo" type="text" [(ngModel)]="newTodoTitle" placeholder="Enter task..." />
+    <select [(ngModel)]="selectedTypeId">
+      <option *ngFor="let type of taskTypes" [value]="type.id">{{ type.name }}</option>
+    </select>
     <button (click)="addTodo()" class="todo-button">Add</button>
   </div>
 
@@ -30,6 +33,9 @@
     <div *ngIf="todo.isEditing; else displayMode">
       <label for="editTodo" class="todo-label">Edit task:</label>
       <input id="editTodo" [(ngModel)]="todo.title" />
+      <select [(ngModel)]="todo.typeId">
+        <option *ngFor="let type of taskTypes" [value]="type.id"> {{ type.name }}</option>
+      </select>
       <button (click)="saveTodoItem(todo)" class="todo-button">Save</button>
       <button (click)="cancelEdit(todo)" class="cancel-button">Cancel</button>
     </div>
@@ -37,9 +43,9 @@
     <!-- Режим отображения задачи -->
     <ng-template #displayMode>
       <span [class.completed]="todo.isCompleted" class="todo-title">{{ todo.title }}</span>
+      <label> {{ todo.typeId }} </label>
       <input type="checkbox" [(ngModel)]="todo.isCompleted" (change)="updateTodoCompletion(todo)" />
       <button class="edit-btn" (click)="editTodoItem(todo)">Edit</button>
-      <label>{{ todo.id! }}</label>
       <button class="delete-btn" (click)="deleteTodoItem(todo.id!)">Delete</button>
     </ng-template>
   </div>

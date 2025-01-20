@@ -2,16 +2,13 @@
   <nav class="navbar">
     <ul class="navbar-menu">
       <li>
-        <a routerLink="/home" routerLinkActive="active">Домой</a>
+        <a routerLink="/rating" routerLinkActive="active">Рейтинг</a>
+      </li>
+      <li>
+        <a routerLink="/search" routerLinkActive="active">Поиск</a>
       </li>
       <li>
         <a routerLink="/todos" routerLinkActive="active">Дела</a>
-      </li>
-      <li>
-        <a routerLink="/about" routerLinkActive="active">О приложении</a>
-      </li>
-      <li>
-        <a routerLink="/contact" routerLinkActive="active">Контакты</a>
       </li>
 
       <ng-container *ngIf="!currentUser">
@@ -24,10 +21,8 @@
       </ng-container>
 
       <ng-container *ngIf="currentUser">
-        <li>
+        <li class="user-block">
           <span class="user-info">Привет, {{ currentUser.FirstName }}!</span>
-        </li>
-        <li>
           <button (click)="logout()">Выйти</button>
         </li>
       </ng-container>

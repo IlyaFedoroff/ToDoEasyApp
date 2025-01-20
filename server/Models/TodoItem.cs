@@ -18,9 +18,15 @@ namespace ToDoEasyApp.Models
         [Required]
         public string Title { get; set; }
 
+        [Required]
         public bool IsCompleted { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        [Required]
+        public int TypeId { get; set; }
+        public TypeTodo Type { get; set; }
+
         [Required]
         public string UserId { get; set; }
         [ForeignKey("UserId")]

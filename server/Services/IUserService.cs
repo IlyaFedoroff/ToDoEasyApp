@@ -1,10 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using server.Models;
+using ToDoEasyApp.Data;
+using ToDoEasyApp.Models;
 namespace server.Services
 {
     public interface IUserService
     {
         Task RegisterAsync(RegisterModel model);
+        Task<List<ApplicationUserWithTodosDto>> GetUserSortedByCompletedTodosAsync();
+
+        Task<List<ApplicationUserDto>> GetUsersAsync();
     }
 
 
@@ -13,11 +19,13 @@ namespace server.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<UserService> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public UserService(UserManager<ApplicationUser> userManager, ILogger<UserService> logger)
+        public UserService(UserManager<ApplicationUser> userManager, ILogger<UserService> logger, ApplicationDbContext context)
         {
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
 
         public async Task RegisterAsync(RegisterModel model)
@@ -36,6 +44,38 @@ namespace server.Services
                 var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"Регистрация пользователя не удалась: {errorMessages}");
             }
+        }
+
+        public async Task<List<ApplicationUserWithTodosDto>> GetUserSortedByCompletedTodosAsync()
+        {
+            var usersWithCompletedTodos = await _context.Users
+                .Select(user => new ApplicationUserWithTodosDto
+                {
+                    UserId = user.Id,
+                    //UserName = user.UserName,
+                    //Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    CompletedTodosCount = user.TodoItems.Count(todo => todo.IsCompleted)
+                })
+                .OrderByDescending(user => user.CompletedTodosCount)
+                .ToListAsync();
+
+            return usersWithCompletedTodos;
+        }
+
+        public async Task<List<ApplicationUserDto>> GetUsersAsync()
+        {
+            var users = await _context.Users
+                .Select(user => new ApplicationUserDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName
+                })
+                .ToListAsync();
+
+            return users;
         }
     }
 }
