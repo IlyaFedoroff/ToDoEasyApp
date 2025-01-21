@@ -3,4 +3,7 @@ export interface UserWithCompletedTodosDto {
   firstName: string,
   lastName: string,
   completedTodosCount: number;
+
+  incompletedTodosCount: number;
+  lastActivity?: Date;
 }

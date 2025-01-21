@@ -8,8 +8,9 @@ namespace server.Services
     public interface IUserService
     {
         Task RegisterAsync(RegisterModel model);
-        Task<List<ApplicationUserWithTodosDto>> GetUserSortedByCompletedTodosAsync();
-
+        Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByCompletedTodosAsync();
+        Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByRecentActivityAsync();
+        Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByTaskDifferenceAsync();
         Task<List<ApplicationUserDto>> GetUsersAsync();
     }
 
@@ -46,14 +47,12 @@ namespace server.Services
             }
         }
 
-        public async Task<List<ApplicationUserWithTodosDto>> GetUserSortedByCompletedTodosAsync()
+        public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByCompletedTodosAsync()
         {
             var usersWithCompletedTodos = await _context.Users
                 .Select(user => new ApplicationUserWithTodosDto
                 {
                     UserId = user.Id,
-                    //UserName = user.UserName,
-                    //Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     CompletedTodosCount = user.TodoItems.Count(todo => todo.IsCompleted)
@@ -63,6 +62,45 @@ namespace server.Services
 
             return usersWithCompletedTodos;
         }
+
+        public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByRecentActivityAsync()
+        {
+            var usersWithRecentActivity = await _context.Users
+                .Select(user => new ApplicationUserWithTodosDto
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    LastActivity = user.TodoItems
+                        .OrderByDescending(todo => todo.CreatedAt)
+                        .Select(todo => todo.CreatedAt)
+                        .FirstOrDefault()   // берем дату последней активности
+                })
+                .OrderByDescending(user => user.LastActivity)
+                .ToListAsync();
+
+            return usersWithRecentActivity;
+        }
+
+
+        public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByTaskDifferenceAsync()
+        {
+            var usersWithTaskDifference = await _context.Users
+                .Select(user => new ApplicationUserWithTodosDto
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    CompletedTodosCount = user.TodoItems.Count(todo => todo.IsCompleted),
+                    IncompletedTodosCount = user.TodoItems.Count(todo => !todo.IsCompleted)
+                })
+                .OrderByDescending(user => user.CompletedTodosCount - user.IncompletedTodosCount)
+                .ToListAsync();
+
+            return usersWithTaskDifference;
+        }
+
+
 
         public async Task<List<ApplicationUserDto>> GetUsersAsync()
         {

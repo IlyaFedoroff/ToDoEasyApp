@@ -1,18 +1,34 @@
 <div *ngIf="users.length > 0; else noData">
-  <h2>Пользователи, отсортированные по количеству выполненных задач</h2>
+  <h2>Пользователи</h2>
+
+
+  <label for="sortMode">Режим сортировки:</label>
+  <select id="sortMode" [(ngModel)]="selectedSortMode" (change)="onSortModeChange()">
+    <option value="completedTasks">По количеству выполненных задач</option>
+    <option value="recentActivity">По недавней активности</option>
+    <option value="taskDifference">По разнице завершенных и незавершенных задач</option>
+  </select>
+
+
+
   <table>
     <thead>
       <tr>
         <th>Имя</th>
         <th>Фамилия</th>
-        <th>Выполнено задач</th>
+
+        <th *ngIf="selectedSortMode === 'completedTasks'">Выполнено задач</th>
+        <th *ngIf="selectedSortMode === 'recentActivity'">Последняя добавленная задача</th>
+        <th *ngIf="selectedSortMode === 'taskDifference'">Разница (выполнено - незавершено)</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let user of users">
         <td>{{ user.firstName }}</td>
         <td>{{ user.lastName }}</td>
-        <td>{{ user.completedTodosCount }}</td>
+        <td *ngIf="selectedSortMode === 'completedTasks'"> {{ user.completedTodosCount }}</td>
+        <td *ngIf="selectedSortMode === 'recentActivity'"> {{ user.lastActivity | date : 'medium' }}</td>
+        <td *ngIf="selectedSortMode === 'taskDifference'">{{ user.completedTodosCount - user.incompletedTodosCount }}</td>
       </tr>
     </tbody>
   </table>

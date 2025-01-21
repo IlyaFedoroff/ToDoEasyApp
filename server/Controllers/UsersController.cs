@@ -19,7 +19,21 @@ namespace server.Controllers
         [HttpGet("sorted-by-completed-todos")]
         public async Task<ActionResult<List<ApplicationUserWithTodosDto>>> GetUsersSortedByCompletedTodosAsync()
         {
-            var users = await _userService.GetUserSortedByCompletedTodosAsync();
+            var users = await _userService.GetUsersSortedByCompletedTodosAsync();
+            return Ok(users);
+        }
+
+        [HttpGet("sorted-by-recent-activity")]
+        public async Task<ActionResult<List<ApplicationUserWithTodosDto>>> GetUsersSortedByRecentActivityAsync()
+        {
+            var users = await _userService.GetUsersSortedByRecentActivityAsync();
+            return Ok(users);
+        }
+
+        [HttpGet("sorted-by-task-difference")]
+        public async Task<ActionResult<List<ApplicationUserWithTodosDto>>> GetUsersSortedByTaskDifferenceAsync()
+        {
+            var users = await _userService.GetUsersSortedByTaskDifferenceAsync();
             return Ok(users);
         }
 

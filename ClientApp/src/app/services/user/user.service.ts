@@ -13,8 +13,19 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
+  // получение пользователей, отсортированных по количеству выполненных задач
   getUsersSortedByCompletedTodos(): Observable<UserWithCompletedTodosDto[]> {
     return this.http.get<UserWithCompletedTodosDto[]>(`${this.apiUrl}/sorted-by-completed-todos`);
+  }
+
+  // получение пользователей, отсортированных по недавней активности
+  getUsersSortedByRecentActivity(): Observable<UserWithCompletedTodosDto[]> {
+    return this.http.get<UserWithCompletedTodosDto[]>(`${this.apiUrl}/sorted-by-recent-activity`);
+  }
+
+  // получение пользователей, отсортированных по разнице выполненных и незавершенных задач
+  getUsersSortedByTaskDifference(): Observable<UserWithCompletedTodosDto[]> {
+    return this.http.get<UserWithCompletedTodosDto[]>(`${this.apiUrl}/sorted-by-task-difference`);
   }
 
   getUsers(): Observable<User[]> {
