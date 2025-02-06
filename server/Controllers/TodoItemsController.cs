@@ -12,8 +12,8 @@
     using Serilog.Core;
     using ToDoEasyApp.Data;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
 
-    
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
@@ -21,13 +21,19 @@
         private readonly TodoItemService _todoItemService;
         private readonly ILogger<TodoItemsController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMemoryCache _cache;
+        private const string CacheKey = "TodoTypes";
 
 
-        public TodoItemsController(TodoItemService todoItemService, ILogger<TodoItemsController> logger, UserManager<ApplicationUser> userManager)
+        public TodoItemsController(TodoItemService todoItemService,
+            ILogger<TodoItemsController> logger,
+            UserManager<ApplicationUser> userManager,
+            IMemoryCache cache)
         {
             _todoItemService = todoItemService;
             _logger = logger;
             _userManager = userManager;
+            _cache = cache;
         }
 
         // GET todoitems
@@ -83,8 +89,19 @@
         [HttpGet("types")]
         public async Task<ActionResult<TypeTodoDto>> GetTodoTypesAsync()
         {
+            if (!_cache.TryGetValue(CacheKey, out IEnumerable<TypeTodoDto>? todoTypes))
+            {
+                // данные отсутствуют в кэше, получаем их из сервиса
+                todoTypes = await _todoItemService.GetTypesAsync() ?? Enumerable.Empty<TypeTodoDto>();
 
-            var todoTypes = await _todoItemService.GetTypesAsync();
+                // настройка кэша
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(CacheKey, todoTypes, cacheOptions);
+            }
+
             return Ok(todoTypes);
         }
 
@@ -123,12 +140,9 @@
                 return NotFound("Пользователь не найден.");
             }
 
-
             try
             {
                 var addedTodoItemDto = await _todoItemService.AddTodoItemAsync(todoItemDto, userId);
-
-
                 //return CreatedAtAction(nameof(GetTodoItemAsync), new { id = addedTodoItemDto.Id }, addedTodoItemDto); не понимаю почему не работает :(
                 return StatusCode(StatusCodes.Status201Created, addedTodoItemDto);
             }
@@ -138,9 +152,6 @@
                 return StatusCode(500, "Произошла ошибка при обработке запроса.");
             }
         }
-
-
-        
 
         // Update todoItem
         [Authorize]

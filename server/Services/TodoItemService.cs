@@ -6,6 +6,7 @@ using ToDoEasyApp.Models;
 using Dapper;
 using Npgsql;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ToDoEasyApp.Services
 {
@@ -15,11 +16,18 @@ namespace ToDoEasyApp.Services
         private readonly ApplicationDbContext _context;
         private readonly ILogger<TodoItemService> _logger;
         private readonly IConfiguration _configuration;
-        public TodoItemService(ApplicationDbContext context, ILogger<TodoItemService> logger, IConfiguration configuration)
+        private readonly IMemoryCache _cache;
+        private const string CacheKey = "";
+
+        public TodoItemService(ApplicationDbContext context,
+            ILogger<TodoItemService> logger,
+            IConfiguration configuration,
+            IMemoryCache cache)
         {
             _context = context;
             _logger = logger;
             _configuration = configuration;
+            _cache = cache;
         }
 
         public async Task<bool> TodoItemExistsAsync(int id)
@@ -45,8 +53,8 @@ namespace ToDoEasyApp.Services
                     Title = t.Title,
                     IsCompleted = t.IsCompleted,
                     CreatedAt = t.CreatedAt,
-                    TypeName = t.Type.Name,
-                    AuthorName = t.User.FirstName + " " + t.User.LastName
+                    TypeName = t.Type != null ? t.Type.Name : "Неизвестно",
+                    AuthorName = t.User != null ? $"{t.User.FirstName} {t.User.LastName}" : "Неизвестный автор"
                 })
                 .ToListAsync();
 
@@ -55,6 +63,7 @@ namespace ToDoEasyApp.Services
 
         public async Task<IEnumerable<TypeTodoDto>> GetTypesAsync()
         {
+            _logger.LogInformation("Обращение к сервису для получения типов");
             return await _context.TypeTodos
                 .Select(t => new TypeTodoDto
                 {
@@ -217,8 +226,8 @@ namespace ToDoEasyApp.Services
                     Title = t.Title,
                     IsCompleted = t.IsCompleted,
                     CreatedAt = t.CreatedAt,
-                    TypeName = t.Type.Name,
-                    AuthorName = t.User.FirstName + " " + t.User.LastName
+                    TypeName = t.Type != null ? t.Type.Name : "Неизвестно",
+                    AuthorName = t.User != null ? t.User.FirstName + " " + t.User.LastName : "Неизвестный автор"
                 })
                 .ToListAsync();
 
@@ -227,8 +236,16 @@ namespace ToDoEasyApp.Services
 
         public async Task<List<TodoItemForSearchDto>> SearchTodosDapperAsync(DateTime? createdAt = null, int? typeId = null, string? authorId = null)
         {
-            var tid = nameof(TypeTodo.Id);
-            _logger.LogInformation("ty.Id: {tid}", tid);
+            _logger.LogInformation("createdAt: {createdAt}", createdAt);
+            _logger.LogInformation("id type: {typeId}", typeId);
+
+            // вычисляем диапазон дат, если createdAt передан
+            DateTime? startDate = createdAt?.Date.ToUniversalTime();
+            DateTime? endDate = startDate?.AddDays(1).AddTicks(-1);
+
+            _logger.LogInformation("startDate: {startDate} endDate: {endDate}", startDate, endDate);
+
+
             const string sql = @$"
                 SELECT
                     t.""{nameof(TodoItem.Id)}"",
@@ -244,28 +261,21 @@ namespace ToDoEasyApp.Services
                 JOIN
                     ""AspNetUsers"" u ON t.""UserId"" = u.""{nameof(ApplicationUser.Id)}""
                 WHERE
-                    (@CreatedAt IS NULL OR (t.""{nameof(TodoItem.CreatedAt)}"" >= @StartDate AND t.""{nameof(TodoItem.CreatedAt)}"" <= @EndDate))
+                    (@createdAt IS NULL OR (t.""{nameof(TodoItem.CreatedAt)}"" >= @startDate AND t.""{nameof(TodoItem.CreatedAt)}"" <= @endDate))
                     AND (@typeId IS NULL OR t.""TypeId"" = @typeId)
                     AND (@authorId IS NULL OR t.""UserId"" = @authorId);";
 
-            // вычисляем диапазон дат, если createdAt передан
-            DateTime? startDate = null;
-            DateTime? endDate = null;
-            if (createdAt.HasValue)
-            {
-                startDate = createdAt.Value.Date.ToUniversalTime();
-                endDate = startDate.Value.AddDays(1).AddTicks(-1);
-            }
-            _logger.LogInformation("startDate: {startDate} endDate: {endDate}", startDate, endDate);
+            
+            var parameters = new DynamicParameters();
 
-            var parameters = new
-            {
-                CreatedAt = createdAt,
-                StartDate = startDate,
-                EndDate = endDate,
-                typeId,
-                authorId
-            };
+            parameters.Add("@createdAt", createdAt?.ToUniversalTime(), System.Data.DbType.DateTime);
+            parameters.Add("@startDate", startDate, System.Data.DbType.DateTime);
+            parameters.Add("@endDate", endDate, System.Data.DbType.DateTime);
+            parameters.Add("@typeId", typeId, System.Data.DbType.Int32);
+            parameters.Add("@authorId", authorId, System.Data.DbType.String);
+
+            _logger.LogInformation("Executing SQL: {sql} with parameters: {parameters}", sql, parameters);
+
 
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             using (var connection = new NpgsqlConnection(connectionString))

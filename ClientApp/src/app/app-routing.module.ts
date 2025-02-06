@@ -19,8 +19,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'rating', component: UserListComponent },
   { path: 'search', component: SearchTodoComponent },
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: '**', redirectTo: '/home' }
+  { path: '', redirectTo: '/rating', pathMatch: 'full' },
+  { path: '**', redirectTo: '/rating' }
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

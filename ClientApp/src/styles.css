@@ -1,3 +1,25 @@
+
+/* Основные стили */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Стили для Snackbar с ошибкой */
+.error-snackbar {
+  background-color: #f44336; /* Красный цвет */
+  color: white;
+}
+
+/* Стили для информационного Snackbar */
+.info-snackbar {
+  background-color: #2196f3; /* Синий цвет */
+  color: white;
+}
+
+
+
+
 .error {
   color: red;
   font-size: 12px;
@@ -23,34 +45,15 @@
   background-color: #f9f9f9;
 }
 
-/* Основные стили */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
-
-/* Стили для Snackbar с ошибкой */
-.error-snackbar {
-  background-color: #f44336; /* Красный цвет */
-  color: white;
-}
-
-/* Стили для информационного Snackbar */
-.info-snackbar {
-  background-color: #2196f3; /* Синий цвет */
-  color: white;
-}
 
 
 
 /* Стили для хедера */
 header {
-  background-color: #4CAF50; /* Зеленый цвет */
+  background-color: #333; /* Зеленый цвет */
   color: white;
   padding: 10px 0;
 }
-
-
 
 
 .navbar {
@@ -95,7 +98,19 @@ header {
     color: #FFD700;
 }
 
+.main-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
 
+
+/* router outlet*/
+.router-container {
+  flex: 1;
+  background-color:lightgoldenrodyellow;
+  padding: 20px;
+}
 
 
 /* Стили для футера */

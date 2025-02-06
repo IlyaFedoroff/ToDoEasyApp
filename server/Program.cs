@@ -17,6 +17,14 @@ builder.Services.AddScoped<TodoItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITodoService, TodoItemService>();
 
+builder.Services.AddMemoryCache();  // кэширование in memory
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "TodoServer:";  // префикс
+});
+
 
 
 // настройка Serilog

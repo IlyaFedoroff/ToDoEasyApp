@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using server.Models;
 using server.Services;
 
@@ -10,10 +11,12 @@ namespace server.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IMemoryCache _cache;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IMemoryCache cache)
         {
             _userService = userService;
+            _cache = cache;
         }
 
         [HttpGet("sorted-by-completed-todos")]

@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using server.Models;
 using ToDoEasyApp.Data;
-using ToDoEasyApp.Models;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
+
 namespace server.Services
 {
     public interface IUserService
@@ -21,12 +24,25 @@ namespace server.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<UserService> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _distributedCache;
 
-        public UserService(UserManager<ApplicationUser> userManager, ILogger<UserService> logger, ApplicationDbContext context)
+        private const string CacheKeyUsers = "Users";
+        private const string CacheKeyCompletedTodos = "UsersWithCompletedTodos";
+        private const string CacheKeyRecentActivity = "UsersWithRecentActivity";
+        private const string CacheKeyTaskDifference = "UsersWithTaskDifference";
+
+        public UserService(UserManager<ApplicationUser> userManager,
+            ILogger<UserService> logger,
+            ApplicationDbContext context,
+            IMemoryCache cache,
+            IDistributedCache distributedCache)
         {
             _userManager = userManager;
             _logger = logger;
             _context = context;
+            _cache = cache;
+            _distributedCache = distributedCache;
         }
 
         public async Task RegisterAsync(RegisterModel model)
@@ -45,10 +61,31 @@ namespace server.Services
                 var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"Регистрация пользователя не удалась: {errorMessages}");
             }
+
+            // удаление старого кэша
+            _cache.Remove(CacheKeyUsers);
+            _cache.Remove(CacheKeyCompletedTodos);
+            _cache.Remove(CacheKeyRecentActivity);
+            _cache.Remove(CacheKeyTaskDifference);
+
         }
 
         public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByCompletedTodosAsync()
         {
+            // пробуем получить данные из Redis
+            var cachedData = await _distributedCache.GetStringAsync(CacheKeyCompletedTodos);
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                // если есть данные в кэше, то десериализуем и возвращаем
+                var deserializedData = JsonSerializer.Deserialize<List<ApplicationUserWithTodosDto>>(cachedData);
+                if (deserializedData != null)
+                {
+                    return deserializedData;
+                }
+            }
+
+            // если нет данных в кэше то делаем запрос к бд
             var usersWithCompletedTodos = await _context.Users
                 .Select(user => new ApplicationUserWithTodosDto
                 {
@@ -60,11 +97,31 @@ namespace server.Services
                 .OrderByDescending(user => user.CompletedTodosCount)
                 .ToListAsync();
 
+            // кэшируем результат на 10 минут
+            await _distributedCache.SetStringAsync(CacheKeyCompletedTodos,
+                JsonSerializer.Serialize(usersWithCompletedTodos),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                });
+
             return usersWithCompletedTodos;
         }
 
         public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByRecentActivityAsync()
         {
+            var cachedData = await _distributedCache.GetStringAsync(CacheKeyRecentActivity);
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                var deserializedData = JsonSerializer.Deserialize<List<ApplicationUserWithTodosDto>>(cachedData);
+                if (deserializedData != null)
+                {
+                    return deserializedData;
+                }
+            }
+
+
             var usersWithRecentActivity = await _context.Users
                 .Select(user => new ApplicationUserWithTodosDto
                 {
@@ -79,12 +136,31 @@ namespace server.Services
                 .OrderByDescending(user => user.LastActivity)
                 .ToListAsync();
 
+            await _distributedCache.SetStringAsync(CacheKeyRecentActivity,
+                JsonSerializer.Serialize(usersWithRecentActivity),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                });
+
             return usersWithRecentActivity;
         }
 
 
         public async Task<List<ApplicationUserWithTodosDto>> GetUsersSortedByTaskDifferenceAsync()
         {
+            var cachedData = await _distributedCache.GetStringAsync(CacheKeyTaskDifference);
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                var deserializedData = JsonSerializer.Deserialize<List<ApplicationUserWithTodosDto>>(cachedData);
+                if (deserializedData != null)
+                {
+                    return deserializedData;
+                }
+            }
+
+
             var usersWithTaskDifference = await _context.Users
                 .Select(user => new ApplicationUserWithTodosDto
                 {
@@ -97,6 +173,14 @@ namespace server.Services
                 .OrderByDescending(user => user.CompletedTodosCount - user.IncompletedTodosCount)
                 .ToListAsync();
 
+            await _distributedCache.SetStringAsync(CacheKeyTaskDifference,
+                JsonSerializer.Serialize(usersWithTaskDifference),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                });
+
+
             return usersWithTaskDifference;
         }
 
@@ -104,16 +188,27 @@ namespace server.Services
 
         public async Task<List<ApplicationUserDto>> GetUsersAsync()
         {
-            var users = await _context.Users
-                .Select(user => new ApplicationUserDto
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName
-                })
-                .ToListAsync();
+            if (!_cache.TryGetValue(CacheKeyUsers, out List<ApplicationUserDto>? users))
+            {
+                users = await _context.Users
+                    .Select(user => new ApplicationUserDto
+                    {
+                        Id = user.Id,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName
+                    })
+                    .ToListAsync();
 
-            return users;
+                // настройка кэша
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                // сохранение данных в кэше
+                _cache.Set(CacheKeyUsers, users, cacheOptions);
+            }
+
+            return users ?? new List<ApplicationUserDto>();
         }
     }
 }

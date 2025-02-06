@@ -11,6 +11,7 @@ namespace ToDoEasyApp.Models
             IsCompleted = false;    //   значение по умолчанию
             CreatedAt = DateTime.UtcNow;
             Title = "standart name";    // стандартный случай когда не получаем Title
+            //UserId = string.Empty;
         }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Автоинкремент для Id
@@ -25,12 +26,12 @@ namespace ToDoEasyApp.Models
 
         [Required]
         public int TypeId { get; set; }
-        public TypeTodo Type { get; set; }
+        public TypeTodo? Type { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public ApplicationUser? User { get; set; }
     }
 }
 

@@ -49,6 +49,9 @@ export class RegisterComponent {
       (response) => {
         const token = response.token;
         this.authService.saveToken(token);
+
+        localStorage.clear();
+
         //localStorage.setItem('authToken', token);
         console.log("Регистрация пользователя прошла успешно", response);
         this.successMessage = "Регистрация успешна! Теперь вы можете войти.";
