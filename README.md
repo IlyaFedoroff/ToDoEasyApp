@@ -1,5 +1,5 @@
 # ToDoEasyApp
-**Angular**, **Docker**, **.NET 9.0**.
+**Angular**, **.NET 9.0**.
 
 ## 📌 Зависимости
 - **Docker** и **Docker Compose** → [Скачать](https://www.docker.com/products/docker-desktop/)
