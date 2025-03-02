@@ -64,7 +64,7 @@ export class TodoService {
     }
 
 
-    return this.http.get<TodoItemForSearchDto[]>(`${this.apiUrl}/search-dapper`, { params });
+    return this.http.get<TodoItemForSearchDto[]>(`${this.apiUrl}/search`, { params });
   }
 
 }

@@ -15,18 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
 var postgresConnectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
-Console.WriteLine($"REDIS_CONNECTION_STRING: {redisConnectionString}");
-Console.WriteLine($"POSTGRES_CONNECTION_STRING: {postgresConnectionString}");
 if (string.IsNullOrEmpty(postgresConnectionString))
 {
     postgresConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
+Console.WriteLine($"REDIS_CONNECTION_STRING: {redisConnectionString}");
+Console.WriteLine($"POSTGRES_CONNECTION_STRING: {postgresConnectionString}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(postgresConnectionString));
-
-
-
 
 builder.Services.AddScoped<TodoItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
