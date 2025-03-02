@@ -1,5 +1,5 @@
 # ToDoEasyApp
-Этот проект — веб-приложение, работающее на **Angular**, **Docker**, **.NET 9.0** и **Nginx**.
+**Angular**, **Docker**, **.NET 9.0**.
 
 ## 📌 Зависимости
 - **Docker** и **Docker Compose** → [Скачать](https://www.docker.com/products/docker-desktop/)
