@@ -5,7 +5,6 @@ using ToDoEasyApp.Data;
 using ToDoEasyApp.Models;
 using Dapper;
 using Npgsql;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ToDoEasyApp.Services
@@ -110,7 +109,7 @@ namespace ToDoEasyApp.Services
                 throw new KeyNotFoundException($"Todo item with id {updatedTodoItemDto.Id} was not found");
             }
 
-            // updating 
+            // updating
             todoItem.Title = updatedTodoItemDto.Title;
             todoItem.IsCompleted = updatedTodoItemDto.IsCompleted;
             todoItem.TypeId = updatedTodoItemDto.TypeId;
@@ -265,7 +264,7 @@ namespace ToDoEasyApp.Services
                     AND (@typeId IS NULL OR t.""TypeId"" = @typeId)
                     AND (@authorId IS NULL OR t.""UserId"" = @authorId);";
 
-            
+
             var parameters = new DynamicParameters();
 
             parameters.Add("@createdAt", createdAt?.ToUniversalTime(), System.Data.DbType.DateTime);

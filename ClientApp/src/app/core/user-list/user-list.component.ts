@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { UserService } from '../../services/user/user.service';
 import { UserWithCompletedTodosDto } from '../../models/UserWithCompletedTodosDto';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class UserListComponent implements OnInit {
   users: UserWithCompletedTodosDto[] = [];
-  selectedSortMode: 'completedTasks' | 'recentActivity' | 'taskDifference' = 'completedTasks';
+  selectedSortMode: 'completedTasks' | 'recentActivity' | 'taskDifference' = 'recentActivity';
 
   constructor(private userService: UserService) { }
 
@@ -36,37 +36,36 @@ export class UserListComponent implements OnInit {
 
   // по количеству выполненных задач
   getUsersSortedByCompletedTodos(): void {
-    this.userService.getUsersSortedByCompletedTodos().subscribe(
-      (data) => {
-        this.users = data;
+    this.userService.getUsersSortedByCompletedTodos().subscribe({
+      next: (d) => {
+        console.log('Получены пользователи:', d);
+        this.users = d;
       },
-      (error) => {
-        console.error('Ошибка при получении пользователей: ', error);
+      error: (e) => {
+        console.error('Ошибка при получении пользователей: ', e);
       }
-    );
+  });
   }
 
   // по недавней активности
   getUsersSortedByRecentActivity(): void {
-    this.userService.getUsersSortedByRecentActivity().subscribe(
-      (data) => {
-        this.users = data;
+    this.userService.getUsersSortedByRecentActivity().subscribe({
+      next: (d) => {
+        console.log('Получены пользователи:', d);
+        this.users = d;
       },
-      (error) => {
-        console.error('Ошибка при получении пользователей: ', error);
-      }
-    );
+      error: (e) => console.error('Ошибка при получении пользователей: ', e)
+    });
   }
 
   // по разнице выполненных и незавершенных задач
   getUsersSortedByTaskDifference(): void {
-    this.userService.getUsersSortedByTaskDifference().subscribe(
-      (data) => {
-        this.users = data;
+    this.userService.getUsersSortedByTaskDifference().subscribe({
+      next: (d) => {
+        console.log('Получены пользователи:', d);
+        this.users = d;
       },
-      (error) => {
-        console.error('Ошибка при получении пользователей: ', error);
-      }
-    );
+      error: (e) =>console.error('Ошибка при получении пользователей: ', e)
+    });
   }
 }

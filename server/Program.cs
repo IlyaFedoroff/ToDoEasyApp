@@ -13,27 +13,42 @@ using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+var postgresConnectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+Console.WriteLine($"REDIS_CONNECTION_STRING: {redisConnectionString}");
+Console.WriteLine($"POSTGRES_CONNECTION_STRING: {postgresConnectionString}");
+if (string.IsNullOrEmpty(postgresConnectionString))
+{
+    postgresConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(postgresConnectionString));
+
+
+
+
 builder.Services.AddScoped<TodoItemService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITodoService, TodoItemService>();
 
-builder.Services.AddMemoryCache();  // кэширование in memory
+builder.Services.AddMemoryCache();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
-    options.InstanceName = "TodoServer:";  // префикс
+    var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "localhost:6379";
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "redis:";
 });
 
 
 
-// настройка Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
-builder.Host.UseSerilog();  //   используем Serilog как логгер для приложения
+builder.Host.UseSerilog();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -43,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "ToDo API",
         Version = "v1",
-        Description = "API для управления задачами",
+        Description = "API for ToDo Easy App",
         Contact = new OpenApiContact
         {
             Name = "Ilya",
@@ -56,31 +71,27 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200") // Укажите точный адрес клиента
-              .AllowAnyHeader() // Разрешить любые заголовки
-              .AllowAnyMethod()); // Разрешить любые HTTP-методы
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "http://todoeasyapp-angular-client", "http://todoeasyapp-angular-client:80", "http://todoeasyapp-angular-client:4200", "http://localhost", "https://localhost", "http://127.0.0.1:4200" )
+              .AllowAnyHeader()
+              .AllowAnyMethod());
 });
 
 builder.Services.AddControllers();
 
-// настройка ApplicationDbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// регистрация identity в DI-контейнере
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Убираем требования для пароля
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6; // минимальная длина пароля
+    options.Password.RequiredLength = 6;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// настройка JWT
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -109,6 +120,32 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    for (int i = 0; i < 10; i++)
+    {
+        try
+        {
+            Console.WriteLine($"РџРѕРїС‹С‚РєР° РїСЂРёРјРµРЅРёС‚СЊ РјРёРіСЂР°С†РёРё ({i + 1}/10)...");
+            await dbContext.Database.MigrateAsync();
+            Console.WriteLine("РњРёРіСЂР°С†РёРё СѓСЃРїРµС€РЅРѕ РїСЂРёРјРµРЅРµРЅС‹!");
+            dbContext.SeedData();
+            break;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"РћС€РёР±РєР° РїСЂРё РїСЂРёРјРµРЅРµРЅРёРё РјРёРіСЂР°С†РёР№ ({i + 1}/10): {ex.Message}");
+            await Task.Delay(5000);
+        }
+    }
+}
+
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -118,7 +155,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowClientApp");
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

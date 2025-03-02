@@ -6,6 +6,7 @@ import { LoginModel } from '../../models/LoginModel';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { tap } from 'rxjs/operators'
 import { BehaviorSubject } from 'rxjs';
+import {environment} from "../../../environments/environments";
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class AuthService {
 
   private jwtHelper = new JwtHelperService();
 
-  private apiUrl = 'https://localhost:7073/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   private tokenKey = 'authToken';
 

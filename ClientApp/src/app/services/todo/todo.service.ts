@@ -6,14 +6,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { TodoType } from '../../models/todoType';
 import { TodoItemForSearchDto } from '../../models/TodoItemForSearchDto';
-
+import { environment } from '../../../environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TodoService {
 
-  private apiUrl = 'https://localhost:7073/api/todoitems';
+  private apiUrl = `${environment.apiUrl}/TodoItems`;
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 

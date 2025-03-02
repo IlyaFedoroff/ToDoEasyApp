@@ -24,12 +24,12 @@
                     .HasForeignKey(t => t.UserId)   // Внешний ключ - UserId
                     .OnDelete(DeleteBehavior.Cascade);  // Удаление пользователя удаляет все его TodoItem
 
-            // Настройка связи между TodoItem и TypeTodo
-            modelBuilder.Entity<TodoItem>()
-                .HasOne(t => t.Type)    // У TodoItem есть один тип
-                .WithMany()             // у Типа может быть много TodoItem
-                .HasForeignKey(t => t.TypeId)   // Внешний ключ - TypeId
-                .OnDelete(DeleteBehavior.Restrict); // Удаления типа не удаляет связанные TodoItem
+                // Настройка связи между TodoItem и TypeTodo
+                modelBuilder.Entity<TodoItem>()
+                    .HasOne(t => t.Type)    // У TodoItem есть один тип
+                    .WithMany()             // у Типа может быть много TodoItem
+                    .HasForeignKey(t => t.TypeId)   // Внешний ключ - TypeId
+                    .OnDelete(DeleteBehavior.Restrict); // Удаления типа не удаляет связанные TodoItem
 
                 // Дополнительные настройки
                 modelBuilder.Entity<TodoItem>()
@@ -40,5 +40,21 @@
                     .Property(t => t.IsCompleted)
                     .HasDefaultValue(false);    // Установка значения по умолчанию для IsCompleted
             }
+
+
+            public void SeedData()
+            {
+                if (!TypeTodos.Any())
+                {
+                    TypeTodos.AddRange(
+                    new TypeTodo { Id = 1, Name = "Работа"},
+                    new TypeTodo { Id = 2, Name = "Личное"},
+                    new TypeTodo {Id = 3, Name = "Учеба"}
+                    );
+
+                    SaveChanges();
+                }
+            }
+
         }
     }

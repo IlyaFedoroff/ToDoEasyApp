@@ -1,11 +1,11 @@
-<div *ngIf="users.length > 0; else noData">
+<div *ngIf="users; else noData">
   <h2>Пользователи</h2>
 
 
   <label for="sortMode">Режим сортировки:</label>
   <select id="sortMode" [(ngModel)]="selectedSortMode" (change)="onSortModeChange()">
-    <option value="completedTasks">По количеству выполненных задач</option>
     <option value="recentActivity">По недавней активности</option>
+    <option value="completedTasks">По количеству выполненных задач</option>
     <option value="taskDifference">По разнице завершенных и незавершенных задач</option>
   </select>
 
@@ -35,5 +35,11 @@
 </div>
 
 <ng-template #noData>
-  <p>Нет данных для отображения.</p>
+  <label for="sortMode">Режим сортировки:</label>
+  <select id="sortMode" [(ngModel)]="selectedSortMode" (change)="onSortModeChange()">
+    <option value="recentActivity">По недавней активности</option>
+    <option value="completedTasks">По количеству выполненных задач</option>
+    <option value="taskDifference">По разнице завершенных и незавершенных задач</option>
+  </select>
+  <p>К сожалению, нет данных для отображения.</p>
 </ng-template>

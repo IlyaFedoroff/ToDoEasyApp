@@ -17,7 +17,7 @@ namespace ToDoEasyApp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -194,7 +194,7 @@ namespace ToDoEasyApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TodoItems");
+                    b.ToTable("TodoItems", (string)null);
                 });
 
             modelBuilder.Entity("server.Models.ApplicationUser", b =>
@@ -286,7 +286,7 @@ namespace ToDoEasyApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TypeTodos");
+                    b.ToTable("TypeTodos", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

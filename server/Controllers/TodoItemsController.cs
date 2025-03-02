@@ -8,10 +8,6 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using server.Models;
-    using Npgsql;
-    using Serilog.Core;
-    using ToDoEasyApp.Data;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
 
     [Route("api/[controller]")]
@@ -104,9 +100,6 @@
 
             return Ok(todoTypes);
         }
-
-        // 
-
 
         // Create a todoItem
         [Authorize]
